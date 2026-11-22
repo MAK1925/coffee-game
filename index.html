@@ -2,62 +2,227 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кофейня</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кофейня: Империя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background-color: #2b2b2b;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 50px;
-            margin: 0;
+        :root {
+            --bg-color: #2b2b2b;
+            --panel-bg: #3c3c3c;
+            --text-main: #ffffff;
+            --accent: #ffcc00;
+            --btn-bg: #4CAF50;
+            --nav-bg: #1e1e1e;
         }
-        h1 { color: #ffcc00; }
-        .container {
-            background-color: #3c3c3c;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        button {
-            background-color: #ffcc00;
-            color: black;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* Верхняя панель */
+        .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 14px; }
+        .stat { font-weight: bold; }
+        .stat span { color: var(--accent); }
+        
+        /* Контентная часть */
+        .content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 80px; }
+        .tab-pane { display: none; text-align: left; }
+        .tab-pane.active { display: block; }
+        
+        h1 { font-size: 22px; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 18px; margin-bottom: 10px; color: var(--accent); }
+        p { margin-bottom: 10px; color: #bbb; font-size: 14px; }
+        
+        button { border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; padding: 15px; font-size: 16px; width: 100%; }
+        button:active { transform: scale(0.97); }
+        
+        .btn-main { background-color: var(--accent); color: #000; margin-bottom: 15px; box-shadow: 0 4px 0 #b38f00; }
+        .btn-main:active { box-shadow: 0 0 0 #b38f00; transform: translateY(4px); }
+        
+        .btn-buy { background-color: var(--btn-bg); color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #2e7d32; }
+        .btn-buy:active { box-shadow: 0 0 0 #2e7d32; transform: translateY(4px); }
+        
+        .card { background-color: var(--panel-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        /* Нижнее меню */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #444; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; cursor: pointer; padding: 5px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 20px; margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 id="title">Управляй кофейней</h1>
-        <p>Твой баланс: <strong id="balance">0</strong> монет.</p>
-        <button onclick="earnMoney()">Сделать кофе ☕</button>
+    <!-- Верхняя панель -->
+    <div class="top-bar">
+        <div class="stat">День: <span id="day-val">1</span></div>
+        <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
+        <div class="stat">Энергия: <span id="energy-val">15</span> ⚡</div>
+    </div>
+
+    <!-- Контент -->
+    <div class="content">
+        <!-- Экран "Кофейня" -->
+        <div id="tab-coffee" class="tab-pane active">
+            <h1>Твоя Кофейня</h1>
+            <div class="card">
+                <h2>Главный экран</h2>
+                <p>Здесь ты управляешь своей империей.</p>
+                <p>Точек в сети: <strong id="points-val">1</strong></p>
+                <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
+                <button class="btn-main" onclick="openDay()">
+                    Открыть день <span id="next-day">1</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран "Сеть" -->
+        <div id="tab-net" class="tab-pane">
+            <h1>Твоя Сеть</h1>
+            <div class="card">
+                <h2>Открыть новую точку</h2>
+                <p>Увеличивает ежедневный доход.</p>
+                <p>Стоимость: <strong id="point-cost">1000</strong> ₸</p>
+                <button class="btn-buy" onclick="buyPoint()">
+                    Открыть точку
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран "Улучшения" (вкладка Ещё) -->
+        <div id="tab-upgrades" class="tab-pane">
+            <h1>Улучшения</h1>
+            <div class="card">
+                <h2>Кофемашина</h2>
+                <p>Увеличивает доход с каждой точки.</p>
+                <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
+                <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
+                <button class="btn-buy" onclick="upgradeMachine()">
+                    Купить улучшение
+                </button>
+            </div>
+        </div>
+
+        <!-- Заглушки для других вкладок -->
+        <div id="tab-city" class="tab-pane"><h1>Город</h1><p>Карта в разработке.</p></div>
+        <div id="tab-people" class="tab-pane"><h1>Люди</h1><p>Найм персонала в разработке.</p></div>
+        <div id="tab-money" class="tab-pane"><h1>Деньги</h1><p>Кредиты и депозиты в разработке.</p></div>
+    </div>
+
+    <!-- Нижнее меню -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchTab('city', this)">
+            <div class="nav-icon">🏙️</div>
+            <div>Город</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('net', this)">
+            <div class="nav-icon">🏪</div>
+            <div>Сеть</div>
+        </div>
+        <div class="nav-item active" onclick="switchTab('coffee', this)">
+            <div class="nav-icon">☕</div>
+            <div>Кофейня</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('people', this)">
+            <div class="nav-icon">👥</div>
+            <div>Люди</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('money', this)">
+            <div class="nav-icon">💰</div>
+            <div>Деньги</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('upgrades', this)">
+            <div class="nav-icon">⚙️</div>
+            <div>Ещё</div>
+        </div>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
-        let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        // Данные игры
+        let money = 500; // Стартовый капитал
+        let energy = 15;
+        let day = 1;
+        
+        // Экономика
+        let points = 1; // Количество точек
+        let pointCost = 1000;
+        let machineLevel = 1;
+        let machineCost = 500;
 
-        let coins = 0;
-        let balanceElement = document.getElementById('balance');
+        // Функция расчета дохода
+        function getIncome() {
+            // 100 базовых * на кол-во точек * на уровень кофемашины
+            return 100 * points * machineLevel;
+        }
 
-        function earnMoney() {
-            coins += 10;
-            balanceElement.innerText = coins;
+        // Обновление интерфейса
+        function updateUI() {
+            document.getElementById('money-val').innerText = Math.floor(money);
+            document.getElementById('energy-val').innerText = energy;
+            document.getElementById('day-val').innerText = day;
+            document.getElementById('next-day').innerText = day + 1;
             
-            // Легкая вибрация при клике (если поддерживается)
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
+            document.getElementById('points-val').innerText = points;
+            document.getElementById('income-val').innerText = getIncome();
+            
+            document.getElementById('point-cost').innerText = pointCost;
+            document.getElementById('machine-lvl').innerText = machineLevel;
+            document.getElementById('machine-cost').innerText = machineCost;
+        }
+
+        // Логика открытия дня
+        function openDay() {
+            if (energy >= 1) {
+                let income = getIncome();
+                money += income;
+                energy -= 1;
+                day += 1;
+                
+                updateUI();
+                if(window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+                alert(`День ${day-1} завершен!\nТы заработал: ${income} ₸`);
+            } else {
+                alert("Нет энергии! Подожди немного (в игре это делается автоматически).");
             }
         }
+
+        // Логика покупки точки
+        function buyPoint() {
+            if (money >= pointCost) {
+                money -= pointCost;
+                points += 1;
+                pointCost = Math.floor(pointCost * 2.5); // Дорожает в 2.5 раза
+                updateUI();
+            } else {
+                alert("Недостаточно денег!");
+            }
+        }
+
+        // Логика улучшения кофемашины
+        function upgradeMachine() {
+            if (money >= machineCost) {
+                money -= machineCost;
+                machineLevel += 1;
+                machineCost = Math.floor(machineCost * 1.8);
+                updateUI();
+            } else {
+                alert("Недостаточно денег!");
+            }
+        }
+
+        // Переключение вкладок
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Инициализация
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        updateUI();
     </script>
 </body>
 </html>
