@@ -17,12 +17,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Верхняя панель */
+        /* Экран загрузки */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); display: flex; justify-content: center; align-items: center;
+            z-index: 9999; font-size: 20px; font-weight: bold; color: var(--accent);
+        }
+
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 14px; }
         .stat { font-weight: bold; }
         .stat span { color: var(--accent); }
         
-        /* Контентная часть */
         .content { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 80px; }
         .tab-pane { display: none; text-align: left; }
         .tab-pane.active { display: block; }
@@ -42,7 +47,6 @@
         
         .card { background-color: var(--panel-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
-        /* Нижнее меню */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #444; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; cursor: pointer; padding: 5px; }
         .nav-item.active { color: var(--accent); }
@@ -51,16 +55,16 @@
 </head>
 <body>
 
-    <!-- Верхняя панель -->
+    <!-- Экран загрузки, чтобы не было моргания цифр -->
+    <div id="loading-screen">Загрузка...</div>
+
     <div class="top-bar">
         <div class="stat">День: <span id="day-val">1</span></div>
         <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
         <div class="stat">Энергия: <span id="energy-val">15</span> ⚡</div>
     </div>
 
-    <!-- Контент -->
     <div class="content">
-        <!-- Экран "Кофейня" -->
         <div id="tab-coffee" class="tab-pane active">
             <h1>Твоя Кофейня</h1>
             <div class="card">
@@ -68,26 +72,20 @@
                 <p>Здесь ты управляешь своей империей.</p>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
                 <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
-                <button class="btn-main" onclick="openDay()">
-                    Открыть день <span id="next-day">1</span>
-                </button>
+                <button class="btn-main" onclick="openDay()">Открыть день <span id="next-day">1</span></button>
             </div>
         </div>
 
-        <!-- Экран "Сеть" -->
         <div id="tab-net" class="tab-pane">
             <h1>Твоя Сеть</h1>
             <div class="card">
                 <h2>Открыть новую точку</h2>
                 <p>Увеличивает ежедневный доход.</p>
                 <p>Стоимость: <strong id="point-cost">1000</strong> ₸</p>
-                <button class="btn-buy" onclick="buyPoint()">
-                    Открыть точку
-                </button>
+                <button class="btn-buy" onclick="buyPoint()">Открыть точку</button>
             </div>
         </div>
 
-        <!-- Экран "Улучшения" (вкладка Ещё) -->
         <div id="tab-upgrades" class="tab-pane">
             <h1>Улучшения</h1>
             <div class="card">
@@ -95,65 +93,41 @@
                 <p>Увеличивает доход с каждой точки.</p>
                 <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
                 <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
-                <button class="btn-buy" onclick="upgradeMachine()">
-                    Купить улучшение
-                </button>
+                <button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button>
             </div>
         </div>
 
-        <!-- Заглушки для других вкладок -->
         <div id="tab-city" class="tab-pane"><h1>Город</h1><p>Карта в разработке.</p></div>
         <div id="tab-people" class="tab-pane"><h1>Люди</h1><p>Найм персонала в разработке.</p></div>
         <div id="tab-money" class="tab-pane"><h1>Деньги</h1><p>Кредиты и депозиты в разработке.</p></div>
     </div>
 
-    <!-- Нижнее меню -->
     <div class="bottom-nav">
-        <div class="nav-item" onclick="switchTab('city', this)">
-            <div class="nav-icon">🏙️</div>
-            <div>Город</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('net', this)">
-            <div class="nav-icon">🏪</div>
-            <div>Сеть</div>
-        </div>
-        <div class="nav-item active" onclick="switchTab('coffee', this)">
-            <div class="nav-icon">☕</div>
-            <div>Кофейня</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('people', this)">
-            <div class="nav-icon">👥</div>
-            <div>Люди</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('money', this)">
-            <div class="nav-icon">💰</div>
-            <div>Деньги</div>
-        </div>
-        <div class="nav-item" onclick="switchTab('upgrades', this)">
-            <div class="nav-icon">⚙️</div>
-            <div>Ещё</div>
-        </div>
+        <div class="nav-item" onclick="switchTab('city', this)"><div class="nav-icon">🏙️</div><div>Город</div></div>
+        <div class="nav-item" onclick="switchTab('net', this)"><div class="nav-icon">🏪</div><div>Сеть</div></div>
+        <div class="nav-item active" onclick="switchTab('coffee', this)"><div class="nav-icon">☕</div><div>Кофейня</div></div>
+        <div class="nav-item" onclick="switchTab('people', this)"><div class="nav-icon">👥</div><div>Люди</div></div>
+        <div class="nav-item" onclick="switchTab('money', this)"><div class="nav-icon">💰</div><div>Деньги</div></div>
+        <div class="nav-item" onclick="switchTab('upgrades', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
     </div>
 
     <script>
-        // Данные игры
-        let money = 500; // Стартовый капитал
+        // Данные игры (по умолчанию)
+        let money = 500;
         let energy = 15;
         let day = 1;
-        
-        // Экономика
-        let points = 1; // Количество точек
+        let points = 1;
         let pointCost = 1000;
         let machineLevel = 1;
         let machineCost = 500;
 
-        // Функция расчета дохода
+        const tg = window.Telegram.WebApp;
+        const SAVE_KEY = 'coffeeEmpireSave';
+
         function getIncome() {
-            // 100 базовых * на кол-во точек * на уровень кофемашины
             return 100 * points * machineLevel;
         }
 
-        // Обновление интерфейса
         function updateUI() {
             document.getElementById('money-val').innerText = Math.floor(money);
             document.getElementById('energy-val').innerText = energy;
@@ -168,31 +142,26 @@
             document.getElementById('machine-cost').innerText = machineCost;
         }
 
-        // Логика открытия дня
         function openDay() {
             if (energy >= 1) {
                 let income = getIncome();
                 money += income;
                 energy -= 1;
                 day += 1;
-                
                 updateUI();
                 saveGame();
-                if(window.Telegram.WebApp.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 alert(`День ${day-1} завершен!\nТы заработал: ${income} ₸`);
             } else {
-                alert("Нет энергии! Подожди немного (в игре это делается автоматически).");
+                alert("Нет энергии!");
             }
         }
 
-        // Логика покупки точки
         function buyPoint() {
             if (money >= pointCost) {
                 money -= pointCost;
                 points += 1;
-                pointCost = Math.floor(pointCost * 2.5); // Дорожает в 2.5 раза
+                pointCost = Math.floor(pointCost * 2.5);
                 updateUI();
                 saveGame();
             } else {
@@ -200,7 +169,6 @@
             }
         }
 
-        // Логика улучшения кофемашины
         function upgradeMachine() {
             if (money >= machineCost) {
                 money -= machineCost;
@@ -213,7 +181,6 @@
             }
         }
 
-        // Переключение вкладок
         function switchTab(tabName, element) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
@@ -221,38 +188,73 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
         }
-        // --- СОХРАНЕНИЕ ПРОГРЕССА ---
-        function saveGame() {
-            let gameData = {
-                money: money,
-                day: day,
-                energy: energy,
-                points: points,
-                pointCost: pointCost,
-                machineLevel: machineLevel,
-                machineCost: machineCost
-            };
-            localStorage.setItem('coffeeEmpireSave', JSON.stringify(gameData));
-        }
 
-        function loadGame() {
-            let saved = localStorage.getItem('coffeeEmpireSave');
-            if (saved) {
-                let data = JSON.parse(saved);
-                money = data.money;
-                day = data.day;
-                energy = data.energy;
-                points = data.points;
-                pointCost = data.pointCost;
-                machineLevel = data.machineLevel;
-                machineCost = data.machineCost;
+        // ДВОЙНОЕ СОХРАНЕНИЕ
+        function saveGame() {
+            const gameData = {
+                money: money, day: day, energy: energy,
+                points: points, pointCost: pointCost,
+                machineLevel: machineLevel, machineCost: machineCost
+            };
+            const dataString = JSON.stringify(gameData);
+
+            // 1. Сохраняем локально (мгновенно)
+            localStorage.setItem(SAVE_KEY, dataString);
+
+            // 2. Сохраняем в облако (надежно)
+            if (tg.CloudStorage) {
+                tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {
+                    if (err) console.error('Ошибка облака:', err);
+                });
             }
         }
-        // -----------------------------
+
+        // УМНАЯ ЗАГРУЗКА
+        function loadGame() {
+            // Сначала берем локальные данные (на случай, если облако тупит)
+            let localData = localStorage.getItem(SAVE_KEY);
+            if (localData) {
+                try {
+                    let data = JSON.parse(localData);
+                    applyData(data);
+                } catch(e) {}
+            }
+
+            // Затем идем в облако
+            if (tg.CloudStorage) {
+                tg.CloudStorage.getItem(SAVE_KEY, (err, cloudData) => {
+                    if (!err && cloudData) {
+                        try {
+                            let data = JSON.parse(cloudData);
+                            applyData(data);
+                        } catch(e) {}
+                    }
+                    // Как только всё загрузили (или проверили) — убираем экран загрузки
+                    finishLoading();
+                });
+            } else {
+                finishLoading();
+            }
+        }
+
+        function applyData(data) {
+            money = data.money !== undefined ? data.money : money;
+            day = data.day !== undefined ? data.day : day;
+            energy = data.energy !== undefined ? data.energy : energy;
+            points = data.points !== undefined ? data.points : points;
+            pointCost = data.pointCost !== undefined ? data.pointCost : pointCost;
+            machineLevel = data.machineLevel !== undefined ? data.machineLevel : machineLevel;
+            machineCost = data.machineCost !== undefined ? data.machineCost : machineCost;
+            updateUI();
+        }
+
+        function finishLoading() {
+            document.getElementById('loading-screen').style.display = 'none';
+        }
 
         // Инициализация
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+        tg.ready();
+        tg.expand();
         updateUI();
         loadGame();
     </script>
