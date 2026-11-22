@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кофейня</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            background-color: #2b2b2b;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+        h1 { color: #ffcc00; }
+        .container {
+            background-color: #3c3c3c;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            background-color: #ffcc00;
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="title">Управляй кофейней</h1>
+        <p>Твой баланс: <strong id="balance">0</strong> монет.</p>
+        <button onclick="earnMoney()">Сделать кофе ☕</button>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на весь экран
+
+        let coins = 0;
+        let balanceElement = document.getElementById('balance');
+
+        function earnMoney() {
+            coins += 10;
+            balanceElement.innerText = coins;
+            
+            // Легкая вибрация при клике (если поддерживается)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        }
+    </script>
+</body>
+</html>
