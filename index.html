@@ -177,6 +177,7 @@
                 day += 1;
                 
                 updateUI();
+                saveGame();
                 if(window.Telegram.WebApp.HapticFeedback) {
                     window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
                 }
@@ -193,6 +194,7 @@
                 points += 1;
                 pointCost = Math.floor(pointCost * 2.5); // Дорожает в 2.5 раза
                 updateUI();
+                saveGame();
             } else {
                 alert("Недостаточно денег!");
             }
@@ -205,6 +207,7 @@
                 machineLevel += 1;
                 machineCost = Math.floor(machineCost * 1.8);
                 updateUI();
+                saveGame();
             } else {
                 alert("Недостаточно денег!");
             }
@@ -218,11 +221,40 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
         }
+        // --- СОХРАНЕНИЕ ПРОГРЕССА ---
+        function saveGame() {
+            let gameData = {
+                money: money,
+                day: day,
+                energy: energy,
+                points: points,
+                pointCost: pointCost,
+                machineLevel: machineLevel,
+                machineCost: machineCost
+            };
+            localStorage.setItem('coffeeEmpireSave', JSON.stringify(gameData));
+        }
+
+        function loadGame() {
+            let saved = localStorage.getItem('coffeeEmpireSave');
+            if (saved) {
+                let data = JSON.parse(saved);
+                money = data.money;
+                day = data.day;
+                energy = data.energy;
+                points = data.points;
+                pointCost = data.pointCost;
+                machineLevel = data.machineLevel;
+                machineCost = data.machineCost;
+            }
+        }
+        // -----------------------------
 
         // Инициализация
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
         updateUI();
+        loadGame();
     </script>
 </body>
 </html>
