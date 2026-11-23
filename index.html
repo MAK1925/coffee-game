@@ -17,11 +17,71 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Экран загрузки */
+        /* Экран загрузки и анимация */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); display: flex; justify-content: center; align-items: center;
-            z-index: 9999; font-size: 20px; font-weight: bold; color: var(--accent);
+            background-color: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .coffee-cup {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+        .cup {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            width: 60px;
+            height: 50px;
+            background-color: #fff;
+            border-radius: 0 0 30px 30px;
+            border-top: 8px solid #d2a679;
+            box-shadow: inset 0 -10px 0 rgba(0,0,0,0.1);
+        }
+        .cup::after {
+            content: '';
+            position: absolute;
+            right: -15px;
+            top: 10px;
+            width: 25px;
+            height: 25px;
+            border: 8px solid #fff;
+            border-radius: 50%;
+            border-left-color: transparent;
+            border-bottom-color: transparent;
+            transform: rotate(45deg);
+        }
+        .steam {
+            position: absolute;
+            width: 8px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: rise 2s infinite ease-in;
+        }
+        .steam:nth-child(1) { left: 20px; animation-delay: 0s; }
+        .steam:nth-child(2) { left: 36px; animation-delay: 0.5s; }
+        .steam:nth-child(3) { left: 52px; animation-delay: 1s; }
+
+        @keyframes rise {
+            0% { bottom: 55px; transform: scaleY(1); opacity: 0.6; }
+            50% { transform: scaleY(1.5) translateX(5px); opacity: 0.3; }
+            100% { bottom: 100px; transform: scaleY(2) translateX(-5px); opacity: 0; }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
 
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 14px; }
@@ -55,8 +115,16 @@
 </head>
 <body>
 
-    <!-- Экран загрузки, чтобы не было моргания цифр -->
-    <div id="loading-screen">Загрузка...</div>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <div class="coffee-cup">
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="cup"></div>
+        </div>
+        <div class="loading-text">Готовим кофе...</div>
+    </div>
 
     <div class="top-bar">
         <div class="stat">День: <span id="day-val">1</span></div>
