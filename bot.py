@@ -4,9 +4,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-# Твой токен
+# Токен вставлен без лишних пробелов
 BOT_TOKEN = '9038251037:AAECAF4p_C11eA57UwXPAa4qrknbBWM6M08'
-# Ссылка на игру
 GAME_URL = 'https://mak1925.github.io/coffee-game/index.html'
 
 logging.basicConfig(level=logging.INFO)
