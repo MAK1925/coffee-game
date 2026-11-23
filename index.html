@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Кофейня: Империя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Подключение стилей (файл создадим на следующем шаге) -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Экран загрузки -->
     <div id="loading-screen">
         <div class="coffee-cup">
             <div class="steam"></div>
@@ -21,7 +19,6 @@
         <div class="loading-text">Готовим кофе...</div>
     </div>
 
-    <!-- Шапка -->
     <div class="top-bar">
         <div class="stat">День: <span id="day-val">1</span></div>
         <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
@@ -31,11 +28,22 @@
         </div>
     </div>
 
-    <!-- Контент -->
     <div class="content">
-        <!-- Кофейня -->
         <div id="tab-coffee" class="tab-pane active">
             <h1>Твоя Кофейня</h1>
+            
+            <div class="card" style="border-left: 5px solid var(--btn-bg);">
+                <h2>🏁 Путь новичка</h2>
+                <p id="task-text" style="color: var(--text-main); font-weight: bold;">Задача: Открыть 1-й день</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1; background: #222; height: 10px; border-radius: 5px; margin-right: 10px; overflow: hidden;">
+                        <div id="task-progress-bar" style="background: var(--btn-bg); height: 100%; width: 0%;"></div>
+                    </div>
+                    <span id="task-progress-text" style="font-size: 12px; font-weight: bold;">0/1</span>
+                </div>
+                <button id="btn-claim-task" class="btn-buy" style="margin-top: 10px; display: none;" onclick="claimTask()">Забрать награду 🎁</button>
+            </div>
+
             <div class="card">
                 <h2>Главный экран</h2>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
@@ -45,13 +53,11 @@
             </div>
         </div>
 
-        <!-- Город -->
         <div id="tab-city" class="tab-pane">
             <h1>Карта Города</h1>
             <div class="city-grid" id="city-grid"></div>
         </div>
 
-        <!-- Сеть -->
         <div id="tab-net" class="tab-pane">
             <h1>Твоя Сеть</h1>
             <div class="card">
@@ -65,7 +71,6 @@
             </div>
         </div>
 
-        <!-- Люди -->
         <div id="tab-people" class="tab-pane">
             <h1>Люди</h1>
             <div class="card">
@@ -80,7 +85,6 @@
             </div>
         </div>
 
-        <!-- Деньги -->
         <div id="tab-money" class="tab-pane">
             <h1>Деньги</h1>
             <div class="card">
@@ -102,7 +106,6 @@
             </div>
         </div>
 
-        <!-- Ещё -->
         <div id="tab-more" class="tab-pane">
             <h1>Ещё</h1>
             <div class="card">
@@ -124,10 +127,8 @@
         </div>
     </div>
 
-    <!-- Кнопка события -->
     <div class="event-btn" id="event-btn" onclick="triggerEvent()">❗</div>
 
-    <!-- Нижнее меню -->
     <div class="bottom-nav">
         <div class="nav-item" onclick="switchTab('city', this)"><div class="nav-icon">🏙️</div><div>Город</div></div>
         <div class="nav-item" onclick="switchTab('net', this)"><div class="nav-icon">🏪</div><div>Сеть</div></div>
@@ -137,7 +138,6 @@
         <div class="nav-item" onclick="switchTab('more', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
     </div>
 
-    <!-- Модалка события -->
     <div class="modal" id="event-modal">
         <div class="modal-content">
             <h2 id="event-title">Событие!</h2>
@@ -147,7 +147,6 @@
         </div>
     </div>
 
-    <!-- Подключение скрипта (файл создадим на последнем шаге) -->
     <script src="app.js"></script>
 </body>
 </html>
