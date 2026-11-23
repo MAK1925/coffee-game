@@ -1,394 +1,153 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Кофейня: Империя</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-:root{--bg:#2b2b2b;--panel:#3c3c3c;--text:#fff;--acc:#ffcc00;--btn:#4CAF50;--nav:#1e1e1e;--danger:#e91e63;--gray:#555;--neighbor:#e91e63}
-*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-body{background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;overflow:hidden}
-#loading{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999}
-.coffee-cup{position:relative;width:80px;height:80px;margin-bottom:20px}
-.cup{position:absolute;bottom:0;left:10px;width:60px;height:50px;background:#fff;border-radius:0 0 30px 30px;border-top:8px solid #d2a679;box-shadow:inset 0 -10px 0 rgba(0,0,0,.1)}
-.cup::after{content:'';position:absolute;right:-15px;top:10px;width:25px;height:25px;border:8px solid #fff;border-radius:50%;border-left-color:transparent;border-bottom-color:transparent;transform:rotate(45deg)}
-.steam{position:absolute;width:8px;height:20px;background:rgba(255,255,255,.4);border-radius:50%;animation:rise 2s infinite ease-in}
-.steam:nth-child(1){left:20px;animation-delay:0s}.steam:nth-child(2){left:36px;animation-delay:.5s}.steam:nth-child(3){left:52px;animation-delay:1s}
-@keyframes rise{0%{bottom:55px;transform:scaleY(1);opacity:.6}50%{transform:scaleY(1.5) translateX(5px);opacity:.3}100%{bottom:100px;transform:scaleY(2) translateX(-5px);opacity:0}}
-.load-text{font-size:18px;font-weight:bold;color:var(--acc);animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
-.top-bar{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background:var(--panel);border-bottom:2px solid #222;font-size:12px;z-index:10}
-.stat{font-weight:bold}.stat span{color:var(--acc)}
-.days-badge{display:flex;align-items:center;background:#222;padding:5px 8px;border-radius:15px;font-weight:bold;border:1px solid var(--gray);font-size:11px}
-.days-badge span{color:var(--btn);margin-left:3px}
-.days-timer{font-size:9px;color:#888;display:block;text-align:right;margin-top:1px}
-.content{flex:1;padding:15px;overflow-y:auto;padding-bottom:90px}
-.tab-pane{display:none;text-align:left}.tab-pane.active{display:block}
-h1{font-size:22px;margin-bottom:15px;text-align:center}h2{font-size:16px;margin-bottom:10px;color:var(--acc)}h3{font-size:14px;margin-bottom:5px;color:#fff}p{margin-bottom:8px;color:#bbb;font-size:13px}
-button{border:none;border-radius:10px;cursor:pointer;font-weight:bold;transition:.2s;padding:12px;font-size:14px;width:100%}button:active{transform:scale(.97)}
-.btn-main{background:var(--acc);color:#000;margin-bottom:15px;box-shadow:0 4px 0 #b38f00;font-size:16px;padding:15px}.btn-main.tired{background:#888;box-shadow:0 4px 0 #555;color:#ddd}
-.btn-buy{background:var(--btn);color:#fff;margin-top:10px;box-shadow:0 4px 0 #2e7d32}
-.btn-sec{background:var(--gray);color:#fff;margin-top:10px;box-shadow:0 4px 0 #333}
-.btn-danger{background:var(--danger);color:#fff;margin-top:10px;box-shadow:0 4px 0 #b0124a}
-.card{background:var(--panel);border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 4px 10px rgba(0,0,0,.3)}
-.city-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:15px}
-.point-card{background:#444;padding:15px;border-radius:10px;border-left:5px solid var(--acc);position:relative}
-.point-card.empty{border-left:5px solid var(--gray);background:#333;opacity:.8;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100px;padding:10px}
-.point-icon{font-size:24px;margin-right:10px}
-.point-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.upgrades-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.upgrade-btn{width:auto;padding:5px 10px;font-size:11px;background:var(--gray);border-radius:5px;border:1px solid #666;color:#fff}.upgrade-btn.active{background:var(--btn);border-color:#2e7d32}
-.neighbor-block{margin-top:15px;padding:10px;background:#222;border-radius:8px;border-left:3px solid var(--neighbor)}
-.neighbor-title{color:var(--neighbor);font-weight:bold;font-size:12px;margin-bottom:5px}
-.neighbor-power{font-size:11px;color:#aaa;margin-bottom:10px}
-.event-btn{position:fixed;bottom:80px;right:20px;width:60px;height:60px;border-radius:50%;background:var(--danger);color:white;font-size:30px;display:flex;justify-content:center;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,.5);z-index:200;animation:pulse-ev 2s infinite;display:none}
-@keyframes pulse-ev{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--nav);display:flex;justify-content:space-around;padding:10px 0;border-top:1px solid #444;z-index:100}
-.nav-item{display:flex;flex-direction:column;align-items:center;color:#888;font-size:10px;cursor:pointer;padding:5px}.nav-item.active{color:var(--acc)}
-.nav-icon{font-size:20px;margin-bottom:3px}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;justify-content:center;align-items:center;padding:20px}
-.modal-content{background:var(--panel);padding:20px;border-radius:15px;width:100%;max-width:400px;text-align:center;border:2px solid var(--acc)}
-.modal-btn{margin-top:10px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кофейня: Империя</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Подключение стилей (файл создадим на следующем шаге) -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="loading"><div class="coffee-cup"><div class="steam"></div><div class="steam"></div><div class="steam"></div><div class="cup"></div></div><div class="load-text">Готовим кофе...</div></div>
 
-<div class="top-bar">
-<div class="stat">День: <span id="day-val">1</span></div>
-<div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
-<div style="text-align:right"><div class="days-badge">📅 Полные дни: <span id="full-days-val">15</span></div><div class="days-timer" id="full-days-timer">+1 через: 5:00</div></div>
-</div>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <div class="coffee-cup">
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="steam"></div>
+            <div class="cup"></div>
+        </div>
+        <div class="loading-text">Готовим кофе...</div>
+    </div>
 
-<div class="content">
-<div id="tab-coffee" class="tab-pane active"><h1>Твоя Кофейня</h1><div class="card"><h2>Главный экран</h2><p>Точек в сети: <strong id="points-val">1</strong></p><p>Прибыль за день: <strong id="income-val">100</strong> ₸</p><button id="btn-open-day" class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button><p id="status-msg" style="text-align:center;margin-top:10px;color:#ffcc00"></p></div></div>
-<div id="tab-city" class="tab-pane"><h1>Карта Города</h1><div class="city-grid" id="city-grid"></div></div>
-<div id="tab-net" class="tab-pane"><h1>Твоя Сеть</h1><div class="card"><h2>Управление всей сетью</h2><button class="btn-sec" onclick="changeAllPrices()">Поднять цену везде (+50)</button></div><div class="card"><h2>Управляющие</h2><p>Статус: <strong id="manager-status">Нет управляющего</strong></p><button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего (5000 ₸)</button></div></div>
-<div id="tab-people" class="tab-pane"><h1>Люди</h1><div class="card"><h2>Найм персонала</h2><p>Нанято: <strong id="barista-val">0</strong></p><p>Стоимость найма: <strong id="barista-cost">2000</strong> ₸</p><button class="btn-buy" onclick="hireBarista()">Нанять бариста</button></div><div class="card"><h2>Твоя команда</h2><div id="baristas-list"><p>Пока никого нет.</p></div></div></div>
-<div id="tab-money" class="tab-pane"><h1>Деньги</h1><div class="card"><h2>Налоги</h2><p>Накоплено к уплате: <strong id="tax-val">0</strong> ₸</p><button class="btn-danger" onclick="payTaxes()">Оплатить налоги</button></div><div class="card"><h2>Депозит (14% годовых)</h2><p>На депозите: <strong id="deposit-val">0</strong> ₸</p><button class="btn-sec" onclick="depositMoney(1000)">Вложить 1000</button><button class="btn-sec" onclick="withdrawDeposit()" style="margin-top:5px">Снять всё</button></div><div class="card"><h2>Кредит (до 30 млн)</h2><p>Текущий долг: <strong id="debt-val">0</strong> ₸</p><button class="btn-sec" onclick="takeLoan(5000)">Взять кредит 5000 ₸</button><button class="btn-sec" onclick="repayLoan()" style="margin-top:5px">Погасить долг</button></div></div>
-<div id="tab-more" class="tab-pane"><h1>Ещё</h1><div class="card"><h2>Таблица лидеров</h2><div id="leaderboard-list"></div></div><div class="card"><h2>Журнал уведомлений</h2><div id="notification-log" style="font-size:12px;color:#aaa;max-height:200px;overflow-y:auto"><p>Пока тихо...</p></div></div><div class="card"><h2>Кофемашина (Улучшение)</h2><p>Текущий уровень: <strong id="machine-lvl">1</strong></p><p>Стоимость: <strong id="machine-cost">500</strong> ₸</p><button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button></div></div>
-</div>
+    <!-- Шапка -->
+    <div class="top-bar">
+        <div class="stat">День: <span id="day-val">1</span></div>
+        <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
+        <div style="text-align: right;">
+            <div class="days-badge">📅 Полные дни: <span id="full-days-val">15</span></div>
+            <div class="days-timer" id="full-days-timer">+1 через: 5:00</div>
+        </div>
+    </div>
 
-<div class="event-btn" id="event-btn" onclick="triggerEvent()">❗</div>
+    <!-- Контент -->
+    <div class="content">
+        <!-- Кофейня -->
+        <div id="tab-coffee" class="tab-pane active">
+            <h1>Твоя Кофейня</h1>
+            <div class="card">
+                <h2>Главный экран</h2>
+                <p>Точек в сети: <strong id="points-val">1</strong></p>
+                <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
+                <button id="btn-open-day" class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
+                <p id="status-msg" style="text-align: center; margin-top: 10px; color: #ffcc00;"></p>
+            </div>
+        </div>
 
-<div class="bottom-nav">
-<div class="nav-item" onclick="switchTab('city',this)"><div class="nav-icon">🏙️</div><div>Город</div></div>
-<div class="nav-item" onclick="switchTab('net',this)"><div class="nav-icon">🏪</div><div>Сеть</div></div>
-<div class="nav-item active" onclick="switchTab('coffee',this)"><div class="nav-icon">☕</div><div>Кофейня</div></div>
-<div class="nav-item" onclick="switchTab('people',this)"><div class="nav-icon">👥</div><div>Люди</div></div>
-<div class="nav-item" onclick="switchTab('money',this)"><div class="nav-icon">💰</div><div>Деньги</div></div>
-<div class="nav-item" onclick="switchTab('more',this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
-</div>
+        <!-- Город -->
+        <div id="tab-city" class="tab-pane">
+            <h1>Карта Города</h1>
+            <div class="city-grid" id="city-grid"></div>
+        </div>
 
-<div class="modal" id="event-modal"><div class="modal-content"><h2 id="event-title">Событие!</h2><p id="event-desc"></p><button class="btn-main modal-btn" id="event-opt1" onclick="resolveEvent(1)">Вариант 1</button><button class="btn-sec modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button></div></div>
+        <!-- Сеть -->
+        <div id="tab-net" class="tab-pane">
+            <h1>Твоя Сеть</h1>
+            <div class="card">
+                <h2>Управление всей сетью</h2>
+                <button class="btn-secondary" onclick="changeAllPrices()">Поднять цену везде (+50)</button>
+            </div>
+            <div class="card">
+                <h2>Управляющие</h2>
+                <p>Статус: <strong id="manager-status">Нет управляющего</strong></p>
+                <button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего (5000 ₸)</button>
+            </div>
+        </div>
 
-<script>
-let money=500,day=1,pointCost=1000,machineLevel=1,machineCost=500,baristaCost=2000;
-let fullDays=15,MAX_FULL_DAYS=100,dayTimerSeconds=300;
-let pointsList=[{id:1,price:100,upgrades:{umbrella:false,sign:false,board:false,music:false},secondCounter:false,baristasAssigned:0,wins:0}];
-let baristasList=[],hasManager=false,managerCost=5000,taxAccumulated=0,depositBalance=0,debt=0;
-let hasActiveEvent=false,currentEventData=null,eventCooldown=0;
-let bots=[{name:"Болат-ага",money:1500,points:1,cups:120},{name:"Сауле",money:3000,points:2,cups:250},{name:"Ерлан",money:8000,points:3,cups:600}];
-let notificationLogs=["Добро пожаловать в игру!"];
-const tg=window.Telegram.WebApp;
-const SAVE_KEY='coffeeEmpireSave_v12';
-const NAMES=["Асхат","Ерлан","Айгерим","Бауыржан","Ника","Сауле","Болат","Дана"];
-const TRAITS=["Трудяга","Веселый","Ворчун","Соня","Профи"];
+        <!-- Люди -->
+        <div id="tab-people" class="tab-pane">
+            <h1>Люди</h1>
+            <div class="card">
+                <h2>Найм персонала</h2>
+                <p>Нанято: <strong id="barista-val">0</strong></p>
+                <p>Стоимость найма: <strong id="barista-cost">2000</strong> ₸</p>
+                <button class="btn-buy" onclick="hireBarista()">Нанять бариста</button>
+            </div>
+            <div class="card">
+                <h2>Твоя команда</h2>
+                <div id="baristas-list"><p>Пока никого нет.</p></div>
+            </div>
+        </div>
 
-function getIncome(){
-let totalBasePrice=0;
-pointsList.forEach(p=>{
-let pPrice=p.price;
-if(p.upgrades&&p.upgrades.umbrella)pPrice+=10;
-if(p.upgrades&&p.upgrades.sign)pPrice+=20;
-if(p.upgrades&&p.upgrades.board)pPrice+=15;
-if(p.upgrades&&p.upgrades.music)pPrice+=25;
-totalBasePrice+=pPrice;
-});
-let baristaBonus=1+(baristasList.length*0.1);
-let managerBonus=hasManager?1.15:1;
-let baseIncome=totalBasePrice*machineLevel*baristaBonus*managerBonus;
-if(fullDays===0)return Math.floor(baseIncome*0.6);
-return Math.floor(baseIncome);
-}
+        <!-- Деньги -->
+        <div id="tab-money" class="tab-pane">
+            <h1>Деньги</h1>
+            <div class="card">
+                <h2>Налоги</h2>
+                <p>Накоплено к уплате: <strong id="tax-val">0</strong> ₸</p>
+                <button class="btn-danger" onclick="payTaxes()">Оплатить налоги</button>
+            </div>
+            <div class="card">
+                <h2>Депозит (14% годовых)</h2>
+                <p>На депозите: <strong id="deposit-val">0</strong> ₸</p>
+                <button class="btn-secondary" onclick="depositMoney(1000)">Вложить 1000</button>
+                <button class="btn-secondary" onclick="withdrawDeposit()" style="margin-top:5px;">Снять всё</button>
+            </div>
+            <div class="card">
+                <h2>Кредит (до 30 млн)</h2>
+                <p>Текущий долг: <strong id="debt-val">0</strong> ₸</p>
+                <button class="btn-secondary" onclick="takeLoan(5000)">Взять кредит 5000 ₸</button>
+                <button class="btn-secondary" onclick="repayLoan()" style="margin-top:5px;">Погасить долг</button>
+            </div>
+        </div>
 
-function updateUI(){
-document.getElementById('money-val').innerText=Math.floor(money).toLocaleString('ru-RU');
-document.getElementById('day-val').innerText=day;
-document.getElementById('next-day').innerText=day+1;
-document.getElementById('full-days-val').innerText=fullDays;
-let mins=Math.floor(dayTimerSeconds/60),secs=dayTimerSeconds%60;
-document.getElementById('full-days-timer').innerText=`+1 через: ${mins}:${secs<10?'0':''}${secs}`;
-let btn=document.getElementById('btn-open-day'),statusMsg=document.getElementById('status-msg');
-if(fullDays>0){btn.classList.remove('tired');btn.innerHTML=`Открыть день <span id="next-day">${day+1}</span> (📅1)`;statusMsg.innerText="Полный день. Прибыль 100%";}
-else{btn.classList.add('tired');btn.innerHTML=`Усталый день <span id="next-day">${day+1}</span>`;statusMsg.innerText="Нет полных дней! Прибыль 60%";}
-document.getElementById('points-val').innerText=pointsList.length;
-document.getElementById('income-val').innerText=getIncome();
-document.getElementById('machine-lvl').innerText=machineLevel;
-document.getElementById('machine-cost').innerText=machineCost;
-document.getElementById('manager-status').innerText=hasManager?"Работает ✅":"Нет управляющего";
-document.getElementById('manager-status').style.color=hasManager?"#4CAF50":"#bbb";
-document.getElementById('btn-hire-manager').disabled=hasManager;
-if(hasManager)document.getElementById('btn-hire-manager').style.opacity="0.5";
-document.getElementById('barista-val').innerText=baristasList.length;
-document.getElementById('barista-cost').innerText=baristaCost;
-let baristaContainer=document.getElementById('baristas-list');
-baristaContainer.innerHTML='';
-if(baristasList.length===0){baristaContainer.innerHTML='<p>Пока никого нет.</p>';}
-else{
-baristasList.forEach((b,index)=>{
-let moodIcon=b.mood>70?"😊":(b.mood>30?"😐":"😠");
-let div=document.createElement('div');
-div.className='barista-item';
-div.style.borderBottom="1px solid #555";div.style.paddingBottom="10px";div.style.marginBottom="10px";
-div.innerHTML=`<h3>${b.name} <span style="font-size:12px;color:#aaa;">(${b.trait})</span></h3><p>Настроение: ${moodIcon} ${b.mood}%</p><button class="btn-sec" onclick="praiseBarista(${index})">Похвалить</button>`;
-baristaContainer.appendChild(div);
-});
-}
-document.getElementById('tax-val').innerText=Math.floor(taxAccumulated).toLocaleString('ru-RU');
-document.getElementById('deposit-val').innerText=Math.floor(depositBalance).toLocaleString('ru-RU');
-document.getElementById('debt-val').innerText=Math.floor(debt).toLocaleString('ru-RU');
-renderCityMap();renderLeaderboard();
-if(hasActiveEvent)document.getElementById('event-btn').style.display='flex';
-else document.getElementById('event-btn').style.display='none';
-}
+        <!-- Ещё -->
+        <div id="tab-more" class="tab-pane">
+            <h1>Ещё</h1>
+            <div class="card">
+                <h2>Таблица лидеров</h2>
+                <div id="leaderboard-list"></div>
+            </div>
+            <div class="card">
+                <h2>Журнал уведомлений</h2>
+                <div id="notification-log" style="font-size:12px; color:#aaa; max-height:200px; overflow-y:auto;">
+                    <p>Пока тихо...</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Кофемашина (Улучшение)</h2>
+                <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
+                <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
+                <button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button>
+            </div>
+        </div>
+    </div>
 
-function renderCityMap(){
-let container=document.getElementById('city-grid');container.innerHTML='';
-pointsList.forEach((point,index)=>{
-let type="🏪";
-if(point.upgrades&&point.upgrades.board)type="🏬";
-if(point.upgrades&&point.upgrades.sign&&point.upgrades.umbrella)type="🏢";
-let neighborPower=50+(index*30)+(machineLevel*10);
-let card=document.createElement('div');
-card.className='point-card';
-card.innerHTML=`
-<div class="point-header"><div><span class="point-icon">${type}</span> <strong>Точка №${index+1}</strong></div><div style="color:var(--acc);font-weight:bold;">${point.price} ₸</div></div>
-<p>Бариста: ${point.baristasAssigned||0} / ${point.secondCounter?6:2} | Кубки: 🏆 ${point.wins||0}</p>
-<div class="upgrades-list">
-<button class="upgrade-btn ${point.upgrades&&point.upgrades.umbrella?'active':''}" onclick="buyUpgrade(${index},'umbrella',500)">☂️ Зонт (500)</button>
-<button class="upgrade-btn ${point.upgrades&&point.upgrades.sign?'active':''}" onclick="buyUpgrade(${index},'sign',1000)">🪧 Вывеска (1000)</button>
-<button class="upgrade-btn ${point.upgrades&&point.upgrades.board?'active':''}" onclick="buyUpgrade(${index},'board',1500)">🖼️ Доска (1500)</button>
-<button class="upgrade-btn ${point.upgrades&&point.upgrades.music?'active':''}" onclick="buyUpgrade(${index},'music',2000)">🎵 Музыка (2000)</button>
-</div>
-${!point.secondCounter?`<button class="btn-sec" style="margin-top:10px;" onclick="buySecondCounter(${index},5000)">Поставить 2-ю стойку (5000 ₸)</button>`:'<p style="color:#4CAF50;margin-top:10px;font-size:12px;">✅ Вторая стойка установлена</p>'}
-<div class="neighbor-block"><div class="neighbor-title">🔴 Сосед: Кофейня "У Болата"</div><div class="neighbor-power">Сила района: ${neighborPower}</div><button class="btn-danger" onclick="fightDistrict(${index},${neighborPower})">⚔️ Бой за район</button></div>
-`;
-container.appendChild(card);
-});
-let emptyCard=document.createElement('div');
-emptyCard.className='point-card empty';
-emptyCard.innerHTML=`<p>Свободное место</p><p style="font-size:12px;margin-bottom:10px;">Стоимость: ${pointCost} ₸</p><button class="btn-buy" onclick="buyPoint()">Открыть точку</button>`;
-container.appendChild(emptyCard);
-}
+    <!-- Кнопка события -->
+    <div class="event-btn" id="event-btn" onclick="triggerEvent()">❗</div>
 
-function renderLeaderboard(){
-let container=document.getElementById('leaderboard-list');container.innerHTML='';
-let allPlayers=[...bots];allPlayers.push({name:"Ты",money:money,points:pointsList.length,isPlayer:true});
-allPlayers.sort((a,b)=>b.money-a.money);
-allPlayers.forEach((p,i)=>{
-let div=document.createElement('div');
-div.style.display='flex';div.style.justifyContent='space-between';div.style.padding='5px 0';div.style.borderBottom='1px solid #444';
-if(p.isPlayer)div.style.color='var(--acc)';
-div.innerHTML=`<span>${i+1}. ${p.name}</span> <span>${Math.floor(p.money).toLocaleString('ru-RU')} ₸</span>`;
-container.appendChild(div);
-});
-}
+    <!-- Нижнее меню -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="switchTab('city', this)"><div class="nav-icon">🏙️</div><div>Город</div></div>
+        <div class="nav-item" onclick="switchTab('net', this)"><div class="nav-icon">🏪</div><div>Сеть</div></div>
+        <div class="nav-item active" onclick="switchTab('coffee', this)"><div class="nav-icon">☕</div><div>Кофейня</div></div>
+        <div class="nav-item" onclick="switchTab('people', this)"><div class="nav-icon">👥</div><div>Люди</div></div>
+        <div class="nav-item" onclick="switchTab('money', this)"><div class="nav-icon">💰</div><div>Деньги</div></div>
+        <div class="nav-item" onclick="switchTab('more', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
+    </div>
 
-function fightDistrict(pointIndex,neighborPower){
-let playerPower=pointsList[pointIndex].price+(machineLevel*20)+(baristasList.length*15);
-if(playerPower>neighborPower){
-let cupsWon=Math.floor(neighborPower/10)+1;
-pointsList[pointIndex].wins=(pointsList[pointIndex].wins||0)+cupsWon;
-pointsList[pointIndex].price+=30;
-addLog(`🏆 Победа! Получено ${cupsWon} кубков.`);
-alert(`Победа! Сила: ${playerPower} vs ${neighborPower}. Получено ${cupsWon} кубков!`);
-}else{
-addLog(`💀 Поражение в бою.`);
-alert(`Поражение! Сила: ${playerPower} vs ${neighborPower}. Прокачай точку!`);
-}
-updateUI();saveGame();
-}
+    <!-- Модалка события -->
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <h2 id="event-title">Событие!</h2>
+            <p id="event-desc"></p>
+            <button class="btn-main modal-btn" id="event-opt1" onclick="resolveEvent(1)">Вариант 1</button>
+            <button class="btn-secondary modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button>
+        </div>
+    </div>
 
-function addLog(text){
-notificationLogs.unshift(text);if(notificationLogs.length>10)notificationLogs.pop();
-let container=document.getElementById('notification-log');
-container.innerHTML=notificationLogs.map(log=>`<p>• ${log}</p>`).join('');
-}
-
-function buyUpgrade(pointIndex,upgradeName,cost){
-let point=pointsList[pointIndex];
-if(point.upgrades&&point.upgrades[upgradeName])return alert("Уже куплено!");
-if(money>=cost){money-=cost;point.upgrades[upgradeName]=true;updateUI();saveGame();}
-else alert("Недостаточно денег!");
-}
-function buySecondCounter(pointIndex,cost){
-if(money>=cost){money-=cost;pointsList[pointIndex].secondCounter=true;updateUI();saveGame();}
-else alert("Недостаточно денег!");
-}
-
-setInterval(()=>{
-if(fullDays<MAX_FULL_DAYS){
-dayTimerSeconds--;
-if(dayTimerSeconds<=0){fullDays++;dayTimerSeconds=300;saveGame();}
-updateUI();
-}else{dayTimerSeconds=300;}
-},1000);
-
-setInterval(()=>{
-if(depositBalance>0){let dailyInterest=depositBalance*(0.14/365);depositBalance+=dailyInterest;updateUI();}
-},60000);
-
-function openDay(){
-let income=getIncome();money+=income;
-let tax=Math.floor(income*0.04);taxAccumulated+=tax;
-if(baristasList.length>0){
-let salaries=baristasList.length*200;money-=salaries;
-if(money<0)baristasList.forEach(b=>b.mood=Math.max(0,b.mood-10));
-}
-day++;
-if(fullDays>0)fullDays--;
-if(!hasActiveEvent&&eventCooldown<=0){if(Math.random()<0.3)spawnRandomEvent();}
-else if(eventCooldown>0)eventCooldown--;
-bots.forEach(b=>b.money+=Math.floor(Math.random()*200)+50);
-updateUI();saveGame();
-if(tg.HapticFeedback)tg.HapticFeedback.notificationOccurred('success');
-}
-
-function hireManager(){
-if(!hasManager&&money>=managerCost){
-money-=managerCost;hasManager=true;
-pointsList.forEach(p=>p.price=Math.floor(p.price*1.2));
-addLog("Нанят управляющий. Цены +20%.");
-updateUI();saveGame();alert("Управляющий нанят!");
-}else alert(hasManager?"Уже есть.":"Недостаточно денег!");
-}
-
-function hireBarista(){
-if(money>=baristaCost){
-let totalCapacity=0;pointsList.forEach(p=>totalCapacity+=(p.secondCounter?6:2));
-if(baristasList.length>=totalCapacity)return alert("Нет мест! Купите 2-ю стойку.");
-money-=baristaCost;
-let randomName=NAMES[Math.floor(Math.random()*NAMES.length)];
-let randomTrait=TRAITS[Math.floor(Math.random()*TRAITS.length)];
-baristasList.push({id:Date.now(),name:randomName,trait:randomTrait,mood:100});
-baristaCost=Math.floor(baristaCost*1.5);
-addLog(`Нанят бариста: ${randomName}`);
-updateUI();saveGame();
-}else alert("Недостаточно денег!");
-}
-
-function praiseBarista(index){
-let b=baristasList[index];
-if(b.mood<100){b.mood=Math.min(100,b.mood+20);updateUI();saveGame();}
-else alert(b.name+" и так счастлив!");
-}
-
-function payTaxes(){
-if(taxAccumulated>0){
-if(money>=taxAccumulated){money-=taxAccumulated;taxAccumulated=0;addLog("Налоги уплачены.");updateUI();saveGame();alert("Налоги уплачены!");}
-else alert("Недостаточно денег!");
-}else alert("Нет накопленных налогов.");
-}
-
-function depositMoney(amount){
-if(money>=amount){money-=amount;depositBalance+=amount;updateUI();saveGame();}
-else alert("Недостаточно денег!");
-}
-
-function withdrawDeposit(){
-if(depositBalance>0){money+=depositBalance;depositBalance=0;updateUI();saveGame();}
-}
-
-function takeLoan(amount){money+=amount;debt+=amount*1.2;updateUI();saveGame();}
-
-function repayLoan(){
-if(debt>0){
-if(money>=debt){money-=debt;debt=0;updateUI();saveGame();alert("Кредит погашен!");}
-else alert("Недостаточно денег!");
-}else alert("У вас нет долгов.");
-}
-
-const EVENTS=[
-{title:"Бариста просит прибавку",desc:"Твой бариста просит больше денег.",opt1:"Дать прибавку (-1000 ₸)",opt2:"Отказать",action1:()=>{if(money>=1000){money-=1000;return "Бариста доволен!";}else return "Не хватило денег!";},action2:()=>{if(Math.random()<0.5&&baristasList.length>0){baristasList.pop();return "Бариста уволился!";}return "Бариста остался.";}},
-{title:"Блогер хочет обзор",desc:"Блогер Ника хочет обзор.",opt1:"Заплатить (-2000 ₸)",opt2:"Отказаться",action1:()=>{if(money>=2000){money-=2000;pointsList[0].price+=20;return "Приток гостей!";}else return "Не хватило денег!";},action2:()=>"Вы отказались."}
-];
-
-function spawnRandomEvent(){
-hasActiveEvent=true;
-currentEventData=EVENTS[Math.floor(Math.random()*EVENTS.length)];
-document.getElementById('event-title').innerText=currentEventData.title;
-document.getElementById('event-desc').innerText=currentEventData.desc;
-document.getElementById('event-opt1').innerText=currentEventData.opt1;
-document.getElementById('event-opt2').innerText=currentEventData.opt2;
-updateUI();
-}
-function triggerEvent(){if(hasActiveEvent)document.getElementById('event-modal').style.display='flex';}
-function resolveEvent(choice){
-let msg=(choice===1)?currentEventData.action1():currentEventData.action2();
-hasActiveEvent=false;eventCooldown=3;
-document.getElementById('event-modal').style.display='none';
-updateUI();saveGame();alert(msg);
-}
-
-function buyPoint(){
-if(money>=pointCost){
-money-=pointCost;
-pointsList.push({id:Date.now(),price:100,upgrades:{umbrella:false,sign:false,board:false,music:false},secondCounter:false,baristasAssigned:0,wins:0});
-pointCost=Math.floor(pointCost*2.5);
-addLog("Открыта новая точка!");
-updateUI();saveGame();
-}else alert("Недостаточно денег!");
-}
-
-function changeAllPrices(){pointsList.forEach(point=>{point.price+=50;});updateUI();saveGame();}
-
-function upgradeMachine(){
-if(money>=machineCost){money-=machineCost;machineLevel+=1;machineCost=Math.floor(machineCost*1.8);updateUI();saveGame();}
-else alert("Недостаточно денег!");
-}
-
-function switchTab(tabName,element){
-document.querySelectorAll('.tab-pane').forEach(el=>el.classList.remove('active'));
-document.getElementById('tab-'+tabName).classList.add('active');
-document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-element.classList.add('active');
-}
-
-function saveGame(){
-const gameData={money,day,fullDays,dayTimerSeconds,pointsList,pointCost,machineLevel,machineCost,baristaCost,baristasList,hasManager,managerCost,taxAccumulated,depositBalance,debt,hasActiveEvent,currentEventData,eventCooldown,bots,notificationLogs};
-const dataString=JSON.stringify(gameData);
-localStorage.setItem(SAVE_KEY,dataString);
-if(tg.CloudStorage)tg.CloudStorage.setItem(SAVE_KEY,dataString,(err)=>{});
-}
-
-function loadGame(){
-let localData=localStorage.getItem(SAVE_KEY);
-if(localData){try{applyData(JSON.parse(localData));}catch(e){}}
-if(tg.CloudStorage){
-tg.CloudStorage.getItem(SAVE_KEY,(err,cloudData)=>{
-if(!err&&cloudData){try{applyData(JSON.parse(cloudData));}catch(e){}}
-finishLoading();
-});
-}else finishLoading();
-}
-
-function applyData(data){
-money=data.money??money;day=data.day??day;
-fullDays=data.fullDays??fullDays;dayTimerSeconds=data.dayTimerSeconds??300;
-pointsList=data.pointsList??pointsList;pointCost=data.pointCost??pointCost;
-machineLevel=data.machineLevel??machineLevel;machineCost=data.machineCost??machineCost;
-baristaCost=data.baristaCost??baristaCost;baristasList=data.baristasList??[];
-hasManager=data.hasManager??false;managerCost=data.managerCost??5000;
-taxAccumulated=data.taxAccumulated??0;depositBalance=data.depositBalance??0;debt=data.debt??0;
-hasActiveEvent=data.hasActiveEvent??false;currentEventData=data.currentEventData??null;eventCooldown=data.eventCooldown??0;
-bots=data.bots??bots;notificationLogs=data.notificationLogs??notificationLogs;
-updateUI();
-}
-
-function finishLoading(){document.getElementById('loading').style.display='none';}
-tg.ready();tg.expand();updateUI();loadGame();
-</script>
+    <!-- Подключение скрипта (файл создадим на последнем шаге) -->
+    <script src="app.js"></script>
 </body>
 </html>
