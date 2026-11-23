@@ -7,7 +7,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # Имя переменной изменено на TOKEN
-TOKEN = '9038251037:AAG26-UiZy7mQThK2E0Zc_CfkGAobsQnbNE'
+TOKEN = '9038251037:AAGg0s_FNU2mCHwJIlcJVmlXXxOczIJWJ1E'
 GAME_URL = 'https://mak1925.github.io/coffee-game/index.html'
 
 logging.basicConfig(level=logging.INFO)
