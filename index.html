@@ -178,7 +178,6 @@
             <button class="btn-secondary modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button>
         </div>
     </div>
-
     <script>
         let money = 500, day = 1, pointCost = 1000, machineLevel = 1, machineCost = 500, baristaCost = 2000;
         let fullDays = 15; const MAX_FULL_DAYS = 100; let dayTimerSeconds = 300;
@@ -188,7 +187,7 @@
         let hasActiveEvent = false, currentEventData = null, eventCooldown = 0;
 
         const tg = window.Telegram.WebApp;
-        const SAVE_KEY = 'coffeeEmpireSave_v8'; // Новая версия сейва, чтобы старый не ломал
+        const SAVE_KEY = 'coffeeEmpireSave_v9';
 
         const NAMES = ["Асхат", "Ерлан", "Айгерим", "Бауыржан", "Ника", "Сауле", "Болат", "Дана"];
         const TRAITS = ["Трудяга", "Веселый", "Ворчун", "Соня", "Профи"];
@@ -488,4 +487,19 @@
 
         function applyData(data) {
             money = data.money ?? money; day = data.day ?? day;
-            full
+            fullDays = data.fullDays ?? fullDays; dayTimerSeconds = data.dayTimerSeconds ?? 300;
+            pointsList = data.pointsList ?? pointsList; pointCost = data.pointCost ?? pointCost;
+            machineLevel = data.machineLevel ?? machineLevel; machineCost = data.machineCost ?? machineCost;
+            baristaCost = data.baristaCost ?? baristaCost; baristasList = data.baristasList ?? [];
+            hasManager = data.hasManager ?? false; managerCost = data.managerCost ?? 5000;
+            taxAccumulated = data.taxAccumulated ?? 0; depositBalance = data.depositBalance ?? 0; debt = data.debt ?? 0;
+            hasActiveEvent = data.hasActiveEvent ?? false; currentEventData = data.currentEventData ?? null; eventCooldown = data.eventCooldown ?? 0;
+            updateUI();
+        }
+
+        function finishLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+
+        tg.ready(); tg.expand(); updateUI(); loadGame();
+    </script>
+</body>
+</html>
