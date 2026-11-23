@@ -23,66 +23,16 @@
             background-color: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 9999;
         }
-        .coffee-cup {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-        }
-        .cup {
-            position: absolute;
-            bottom: 0;
-            left: 10px;
-            width: 60px;
-            height: 50px;
-            background-color: #fff;
-            border-radius: 0 0 30px 30px;
-            border-top: 8px solid #d2a679;
-            box-shadow: inset 0 -10px 0 rgba(0,0,0,0.1);
-        }
-        .cup::after {
-            content: '';
-            position: absolute;
-            right: -15px;
-            top: 10px;
-            width: 25px;
-            height: 25px;
-            border: 8px solid #fff;
-            border-radius: 50%;
-            border-left-color: transparent;
-            border-bottom-color: transparent;
-            transform: rotate(45deg);
-        }
-        .steam {
-            position: absolute;
-            width: 8px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            animation: rise 2s infinite ease-in;
-        }
+        .coffee-cup { position: relative; width: 80px; height: 80px; margin-bottom: 20px; }
+        .cup { position: absolute; bottom: 0; left: 10px; width: 60px; height: 50px; background-color: #fff; border-radius: 0 0 30px 30px; border-top: 8px solid #d2a679; box-shadow: inset 0 -10px 0 rgba(0,0,0,0.1); }
+        .cup::after { content: ''; position: absolute; right: -15px; top: 10px; width: 25px; height: 25px; border: 8px solid #fff; border-radius: 50%; border-left-color: transparent; border-bottom-color: transparent; transform: rotate(45deg); }
+        .steam { position: absolute; width: 8px; height: 20px; background: rgba(255, 255, 255, 0.4); border-radius: 50%; animation: rise 2s infinite ease-in; }
         .steam:nth-child(1) { left: 20px; animation-delay: 0s; }
         .steam:nth-child(2) { left: 36px; animation-delay: 0.5s; }
         .steam:nth-child(3) { left: 52px; animation-delay: 1s; }
-
-        @keyframes rise {
-            0% { bottom: 55px; transform: scaleY(1); opacity: 0.6; }
-            50% { transform: scaleY(1.5) translateX(5px); opacity: 0.3; }
-            100% { bottom: 100px; transform: scaleY(2) translateX(-5px); opacity: 0; }
-        }
-
-        .loading-text {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--accent);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
+        @keyframes rise { 0% { bottom: 55px; transform: scaleY(1); opacity: 0.6; } 50% { transform: scaleY(1.5) translateX(5px); opacity: 0.3; } 100% { bottom: 100px; transform: scaleY(2) translateX(-5px); opacity: 0; } }
+        .loading-text { font-size: 18px; font-weight: bold; color: var(--accent); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 14px; }
         .stat { font-weight: bold; }
@@ -98,6 +48,7 @@
         
         button { border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; padding: 15px; font-size: 16px; width: 100%; }
         button:active { transform: scale(0.97); }
+        button:disabled { background-color: #555; color: #888; box-shadow: none; transform: none; cursor: not-allowed; }
         
         .btn-main { background-color: var(--accent); color: #000; margin-bottom: 15px; box-shadow: 0 4px 0 #b38f00; }
         .btn-main:active { box-shadow: 0 0 0 #b38f00; transform: translateY(4px); }
@@ -115,7 +66,6 @@
 </head>
 <body>
 
-    <!-- Экран загрузки -->
     <div id="loading-screen">
         <div class="coffee-cup">
             <div class="steam"></div>
@@ -140,7 +90,7 @@
                 <p>Здесь ты управляешь своей империей.</p>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
                 <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
-                <button class="btn-main" onclick="openDay()">Открыть день <span id="next-day">1</span></button>
+                <button class="btn-main" id="open-day-btn" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
             </div>
         </div>
 
@@ -180,7 +130,7 @@
     </div>
 
     <script>
-        // Данные игры (по умолчанию)
+        // Данные игры
         let money = 500;
         let energy = 15;
         let day = 1;
@@ -188,6 +138,9 @@
         let pointCost = 1000;
         let machineLevel = 1;
         let machineCost = 500;
+        
+        const MAX_ENERGY = 15; // Максимальный запас
+        const ENERGY_REGEN_TIME = 60000; // 1 минута (в миллисекундах) для восстановления 1 энергии
 
         const tg = window.Telegram.WebApp;
         const SAVE_KEY = 'coffeeEmpireSave';
@@ -208,6 +161,16 @@
             document.getElementById('point-cost').innerText = pointCost;
             document.getElementById('machine-lvl').innerText = machineLevel;
             document.getElementById('machine-cost').innerText = machineCost;
+
+            // Управление кнопкой открытия дня
+            const btn = document.getElementById('open-day-btn');
+            if (energy < 1) {
+                btn.disabled = true;
+                btn.innerHTML = `Ждем энергию...`;
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `Открыть день ${day + 1}`;
+            }
         }
 
         function openDay() {
@@ -220,8 +183,6 @@
                 saveGame();
                 if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 alert(`День ${day-1} завершен!\nТы заработал: ${income} ₸`);
-            } else {
-                alert("Нет энергии!");
             }
         }
 
@@ -257,7 +218,18 @@
             element.classList.add('active');
         }
 
-        // ДВОЙНОЕ СОХРАНЕНИЕ
+        // --- ВОССТАНОВЛЕНИЕ ЭНЕРГИИ ---
+        function startEnergyRegen() {
+            setInterval(() => {
+                if (energy < MAX_ENERGY) {
+                    energy += 1;
+                    updateUI();
+                    saveGame();
+                }
+            }, ENERGY_REGEN_TIME);
+        }
+
+        // СОХРАНЕНИЕ
         function saveGame() {
             const gameData = {
                 money: money, day: day, energy: energy,
@@ -265,39 +237,23 @@
                 machineLevel: machineLevel, machineCost: machineCost
             };
             const dataString = JSON.stringify(gameData);
-
-            // 1. Сохраняем локально (мгновенно)
             localStorage.setItem(SAVE_KEY, dataString);
-
-            // 2. Сохраняем в облако (надежно)
             if (tg.CloudStorage) {
-                tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {
-                    if (err) console.error('Ошибка облака:', err);
-                });
+                tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {});
             }
         }
 
-        // УМНАЯ ЗАГРУЗКА
+        // ЗАГРУЗКА
         function loadGame() {
-            // Сначала берем локальные данные (на случай, если облако тупит)
             let localData = localStorage.getItem(SAVE_KEY);
             if (localData) {
-                try {
-                    let data = JSON.parse(localData);
-                    applyData(data);
-                } catch(e) {}
+                try { applyData(JSON.parse(localData)); } catch(e) {}
             }
-
-            // Затем идем в облако
             if (tg.CloudStorage) {
                 tg.CloudStorage.getItem(SAVE_KEY, (err, cloudData) => {
                     if (!err && cloudData) {
-                        try {
-                            let data = JSON.parse(cloudData);
-                            applyData(data);
-                        } catch(e) {}
+                        try { applyData(JSON.parse(cloudData)); } catch(e) {}
                     }
-                    // Как только всё загрузили (или проверили) — убираем экран загрузки
                     finishLoading();
                 });
             } else {
@@ -318,9 +274,9 @@
 
         function finishLoading() {
             document.getElementById('loading-screen').style.display = 'none';
+            startEnergyRegen(); // Запускаем таймер восстановления энергии
         }
 
-        // Инициализация
         tg.ready();
         tg.expand();
         updateUI();
