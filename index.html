@@ -115,6 +115,16 @@
             </div>
         </div>
 
+        <!-- Сеть (ВОТ ОНА) -->
+        <div id="tab-net" class="tab-pane">
+            <h1>Твоя Сеть</h1>
+            <div class="card">
+                <h2>Управление всей сетью</h2>
+                <p>Подними цену сразу во всех точках.</p>
+                <button class="btn-secondary" onclick="changeAllPrices()">Поднять цену везде (+50)</button>
+            </div>
+        </div>
+
         <!-- Люди -->
         <div id="tab-people" class="tab-pane">
             <h1>Люди</h1>
@@ -161,14 +171,13 @@
         let baristas = 0;
         let baristaCost = 2000;
 
-        // Массив точек (вместо простого счетчика)
+        // Массив точек
         let pointsList = [{ id: 1, price: 100 }];
 
         const tg = window.Telegram.WebApp;
         const SAVE_KEY = 'coffeeEmpireSave';
 
         function getIncome() {
-            // Считаем базовую прибыль (сумма всех цен точек) * уровень машин * бонус бариста
             let totalBasePrice = pointsList.reduce((sum, point) => sum + point.price, 0);
             let baristaBonus = 1 + (baristas * 0.1);
             return Math.floor(totalBasePrice * machineLevel * baristaBonus);
@@ -228,6 +237,14 @@
 
         function changePointPrice(index) {
             pointsList[index].price += 50;
+            updateUI();
+            saveGame();
+        }
+
+        function changeAllPrices() {
+            pointsList.forEach(point => {
+                point.price += 50;
+            });
             updateUI();
             saveGame();
         }
