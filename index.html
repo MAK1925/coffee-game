@@ -60,6 +60,9 @@
         
         .card { background-color: var(--panel-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
+        .point-item { border-bottom: 1px solid #555; padding-bottom: 10px; margin-bottom: 10px; }
+        .point-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #444; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; cursor: pointer; padding: 5px; }
         .nav-item.active { color: var(--accent); }
@@ -91,29 +94,28 @@
                 <h2>Главный экран</h2>
                 <p>Здесь ты управляешь своей империей.</p>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
-                <p>Цена за чашку: <strong id="price-val">100</strong> ₸</p>
                 <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
                 <button class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
             </div>
         </div>
 
-        <!-- Сеть -->
-        <div id="tab-net" class="tab-pane">
-            <h1>Твоя Сеть</h1>
+        <!-- Город (Список точек) -->
+        <div id="tab-city" class="tab-pane">
+            <h1>Город</h1>
+            <div class="card">
+                <h2>Твои точки</h2>
+                <div id="points-list">
+                    <!-- Тут будут генерироваться точки -->
+                </div>
+            </div>
             <div class="card">
                 <h2>Открыть новую точку</h2>
-                <p>Увеличивает ежедневный доход.</p>
                 <p>Стоимость: <strong id="point-cost">1000</strong> ₸</p>
                 <button class="btn-buy" onclick="buyPoint()">Открыть точку</button>
             </div>
-            <div class="card">
-                <h2>Управление ценой</h2>
-                <p>Чем выше цена, тем больше прибыль.</p>
-                <button class="btn-secondary" onclick="changePrice(50)">Поднять цену (+50)</button>
-            </div>
         </div>
 
-        <!-- Люди (Новая вкладка) -->
+        <!-- Люди -->
         <div id="tab-people" class="tab-pane">
             <h1>Люди</h1>
             <div class="card">
@@ -137,7 +139,6 @@
             </div>
         </div>
 
-        <div id="tab-city" class="tab-pane"><h1>Город</h1><p>Карта в разработке.</p></div>
         <div id="tab-money" class="tab-pane"><h1>Деньги</h1><p>Кредиты и депозиты в разработке.</p></div>
     </div>
 
@@ -154,24 +155,23 @@
         // Данные игры
         let money = 500;
         let day = 1;
-        let points = 1;
         let pointCost = 1000;
         let machineLevel = 1;
         let machineCost = 500;
-        
-        // Новые данные
         let baristas = 0;
         let baristaCost = 2000;
-        let price = 100; // Цена за чашку
+
+        // Массив точек (вместо простого счетчика)
+        let pointsList = [{ id: 1, price: 100 }];
 
         const tg = window.Telegram.WebApp;
         const SAVE_KEY = 'coffeeEmpireSave';
 
         function getIncome() {
-            // Базовая прибыль (100) + надбавка за цену + бонус от бариста + уровень кофемашины
-            let base = 100 + (price - 100); 
-            let baristaBonus = 1 + (baristas * 0.1); // Каждый бариста дает +10% к прибыли
-            return Math.floor(base * points * machineLevel * baristaBonus);
+            // Считаем базовую прибыль (сумма всех цен точек) * уровень машин * бонус бариста
+            let totalBasePrice = pointsList.reduce((sum, point) => sum + point.price, 0);
+            let baristaBonus = 1 + (baristas * 0.1);
+            return Math.floor(totalBasePrice * machineLevel * baristaBonus);
         }
 
         function updateUI() {
@@ -179,8 +179,7 @@
             document.getElementById('day-val').innerText = day;
             document.getElementById('next-day').innerText = day + 1;
             
-            document.getElementById('points-val').innerText = points;
-            document.getElementById('price-val').innerText = price;
+            document.getElementById('points-val').innerText = pointsList.length;
             document.getElementById('income-val').innerText = getIncome();
             
             document.getElementById('point-cost').innerText = pointCost;
@@ -189,6 +188,20 @@
 
             document.getElementById('barista-val').innerText = baristas;
             document.getElementById('barista-cost').innerText = baristaCost;
+
+            // Рендер списка точек
+            let container = document.getElementById('points-list');
+            container.innerHTML = '';
+            pointsList.forEach((point, index) => {
+                let div = document.createElement('div');
+                div.className = 'point-item';
+                div.innerHTML = `
+                    <p><strong>Точка №${index + 1}</strong></p>
+                    <p>Цена: ${point.price} ₸</p>
+                    <button class="btn-secondary" onclick="changePointPrice(${index})">Поднять цену (+50)</button>
+                `;
+                container.appendChild(div);
+            });
         }
 
         function openDay() {
@@ -204,13 +217,19 @@
         function buyPoint() {
             if (money >= pointCost) {
                 money -= pointCost;
-                points += 1;
+                pointsList.push({ id: Date.now(), price: 100 });
                 pointCost = Math.floor(pointCost * 2.5);
                 updateUI();
                 saveGame();
             } else {
                 alert("Недостаточно денег!");
             }
+        }
+
+        function changePointPrice(index) {
+            pointsList[index].price += 50;
+            updateUI();
+            saveGame();
         }
 
         function upgradeMachine() {
@@ -223,12 +242,6 @@
             } else {
                 alert("Недостаточно денег!");
             }
-        }
-
-        function changePrice(amount) {
-            price += amount;
-            updateUI();
-            saveGame();
         }
 
         function hireBarista() {
@@ -255,9 +268,9 @@
         function saveGame() {
             const gameData = {
                 money: money, day: day,
-                points: points, pointCost: pointCost,
+                pointsList: pointsList, pointCost: pointCost,
                 machineLevel: machineLevel, machineCost: machineCost,
-                baristas: baristas, baristaCost: baristaCost, price: price
+                baristas: baristas, baristaCost: baristaCost
             };
             const dataString = JSON.stringify(gameData);
             localStorage.setItem(SAVE_KEY, dataString);
@@ -287,13 +300,12 @@
         function applyData(data) {
             money = data.money !== undefined ? data.money : money;
             day = data.day !== undefined ? data.day : day;
-            points = data.points !== undefined ? data.points : points;
+            pointsList = data.pointsList !== undefined ? data.pointsList : pointsList;
             pointCost = data.pointCost !== undefined ? data.pointCost : pointCost;
             machineLevel = data.machineLevel !== undefined ? data.machineLevel : machineLevel;
             machineCost = data.machineCost !== undefined ? data.machineCost : machineCost;
             baristas = data.baristas !== undefined ? data.baristas : baristas;
             baristaCost = data.baristaCost !== undefined ? data.baristaCost : baristaCost;
-            price = data.price !== undefined ? data.price : price;
             updateUI();
         }
 
