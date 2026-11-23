@@ -188,7 +188,7 @@
         let hasActiveEvent = false, currentEventData = null, eventCooldown = 0;
 
         const tg = window.Telegram.WebApp;
-        const SAVE_KEY = 'coffeeEmpireSave_v7'; // Обновил версию сейва
+        const SAVE_KEY = 'coffeeEmpireSave_v8'; // Новая версия сейва, чтобы старый не ломал
 
         const NAMES = ["Асхат", "Ерлан", "Айгерим", "Бауыржан", "Ника", "Сауле", "Болат", "Дана"];
         const TRAITS = ["Трудяга", "Веселый", "Ворчун", "Соня", "Профи"];
@@ -197,10 +197,10 @@
             let totalBasePrice = 0;
             pointsList.forEach(p => {
                 let pPrice = p.price;
-                if (p.upgrades.umbrella) pPrice += 10;
-                if (p.upgrades.sign) pPrice += 20;
-                if (p.upgrades.board) pPrice += 15;
-                if (p.upgrades.music) pPrice += 25;
+                if (p.upgrades && p.upgrades.umbrella) pPrice += 10;
+                if (p.upgrades && p.upgrades.sign) pPrice += 20;
+                if (p.upgrades && p.upgrades.board) pPrice += 15;
+                if (p.upgrades && p.upgrades.music) pPrice += 25;
                 totalBasePrice += pPrice;
             });
             let baristaBonus = 1 + (baristasList.length * 0.1);
@@ -235,7 +235,6 @@
             document.getElementById('points-val').innerText = pointsList.length;
             document.getElementById('income-val').innerText = getIncome();
             
-            document.getElementById('point-cost').innerText = pointCost;
             document.getElementById('machine-lvl').innerText = machineLevel;
             document.getElementById('machine-cost').innerText = machineCost;
             
@@ -286,8 +285,8 @@
 
             pointsList.forEach((point, index) => {
                 let type = "🏪";
-                if (point.upgrades.board) type = "🏬";
-                if (point.upgrades.sign && point.upgrades.umbrella) type = "🏢";
+                if (point.upgrades && point.upgrades.board) type = "🏬";
+                if (point.upgrades && point.upgrades.sign && point.upgrades.umbrella) type = "🏢";
 
                 let card = document.createElement('div');
                 card.className = 'point-card';
@@ -296,12 +295,12 @@
                         <div><span class="point-icon">${type}</span> <strong>Точка №${index + 1}</strong></div>
                         <div style="color:var(--accent); font-weight:bold;">${point.price} ₸</div>
                     </div>
-                    <p>Бариста: ${point.baristasAssigned} / ${point.secondCounter ? 6 : 2}</p>
+                    <p>Бариста: ${point.baristasAssigned || 0} / ${point.secondCounter ? 6 : 2}</p>
                     <div class="upgrades-list">
-                        <button class="upgrade-btn ${point.upgrades.umbrella ? 'active' : ''}" onclick="buyUpgrade(${index}, 'umbrella', 500)">☂️ Зонт (500)</button>
-                        <button class="upgrade-btn ${point.upgrades.sign ? 'active' : ''}" onclick="buyUpgrade(${index}, 'sign', 1000)">🪧 Вывеска (1000)</button>
-                        <button class="upgrade-btn ${point.upgrades.board ? 'active' : ''}" onclick="buyUpgrade(${index}, 'board', 1500)">🖼️ Доска (1500)</button>
-                        <button class="upgrade-btn ${point.upgrades.music ? 'active' : ''}" onclick="buyUpgrade(${index}, 'music', 2000)">🎵 Музыка (2000)</button>
+                        <button class="upgrade-btn ${point.upgrades && point.upgrades.umbrella ? 'active' : ''}" onclick="buyUpgrade(${index}, 'umbrella', 500)">☂️ Зонт (500)</button>
+                        <button class="upgrade-btn ${point.upgrades && point.upgrades.sign ? 'active' : ''}" onclick="buyUpgrade(${index}, 'sign', 1000)">🪧 Вывеска (1000)</button>
+                        <button class="upgrade-btn ${point.upgrades && point.upgrades.board ? 'active' : ''}" onclick="buyUpgrade(${index}, 'board', 1500)">🖼️ Доска (1500)</button>
+                        <button class="upgrade-btn ${point.upgrades && point.upgrades.music ? 'active' : ''}" onclick="buyUpgrade(${index}, 'music', 2000)">🎵 Музыка (2000)</button>
                     </div>
                     ${!point.secondCounter ? `<button class="btn-secondary" style="margin-top:10px;" onclick="buySecondCounter(${index}, 5000)">Поставить 2-ю стойку (5000 ₸)</button>` : '<p style="color:#4CAF50; margin-top:10px; font-size:12px;">✅ Вторая стойка установлена (до 6 бариста)</p>'}
                 `;
@@ -320,7 +319,7 @@
 
         function buyUpgrade(pointIndex, upgradeName, cost) {
             let point = pointsList[pointIndex];
-            if (point.upgrades[upgradeName]) return alert("Уже куплено!");
+            if (point.upgrades && point.upgrades[upgradeName]) return alert("Уже куплено!");
             if (money >= cost) { money -= cost; point.upgrades[upgradeName] = true; updateUI(); saveGame(); } 
             else alert("Недостаточно денег!");
         }
@@ -489,19 +488,4 @@
 
         function applyData(data) {
             money = data.money ?? money; day = data.day ?? day;
-            fullDays = data.fullDays ?? fullDays; dayTimerSeconds = data.dayTimerSeconds ?? 300;
-            pointsList = data.pointsList ?? pointsList; pointCost = data.pointCost ?? pointCost;
-            machineLevel = data.machineLevel ?? machineLevel; machineCost = data.machineCost ?? machineCost;
-            baristaCost = data.baristaCost ?? baristaCost; baristasList = data.baristasList ?? [];
-            hasManager = data.hasManager ?? false; managerCost = data.managerCost ?? 5000;
-            taxAccumulated = data.taxAccumulated ?? 0; depositBalance = data.depositBalance ?? 0; debt = data.debt ?? 0;
-            hasActiveEvent = data.hasActiveEvent ?? false; currentEventData = data.currentEventData ?? null; eventCooldown = data.eventCooldown ?? 0;
-            updateUI();
-        }
-
-        function finishLoading() { document.getElementById('loading-screen').style.display = 'none'; }
-
-        tg.ready(); tg.expand(); updateUI(); loadGame();
-    </script>
-</body>
-</html>
+            full
