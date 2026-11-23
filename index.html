@@ -48,7 +48,6 @@
         
         button { border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; padding: 15px; font-size: 16px; width: 100%; }
         button:active { transform: scale(0.97); }
-        button:disabled { background-color: #555; color: #888; box-shadow: none; transform: none; cursor: not-allowed; }
         
         .btn-main { background-color: var(--accent); color: #000; margin-bottom: 15px; box-shadow: 0 4px 0 #b38f00; }
         .btn-main:active { box-shadow: 0 0 0 #b38f00; transform: translateY(4px); }
@@ -79,7 +78,6 @@
     <div class="top-bar">
         <div class="stat">День: <span id="day-val">1</span></div>
         <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
-        <div class="stat">Энергия: <span id="energy-val">15</span> ⚡</div>
     </div>
 
     <div class="content">
@@ -90,7 +88,7 @@
                 <p>Здесь ты управляешь своей империей.</p>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
                 <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
-                <button class="btn-main" id="open-day-btn" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
+                <button class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
             </div>
         </div>
 
@@ -132,15 +130,11 @@
     <script>
         // Данные игры
         let money = 500;
-        let energy = 15;
         let day = 1;
         let points = 1;
         let pointCost = 1000;
         let machineLevel = 1;
         let machineCost = 500;
-        
-        const MAX_ENERGY = 15; // Максимальный запас
-        const ENERGY_REGEN_TIME = 60000; // 1 минута (в миллисекундах) для восстановления 1 энергии
 
         const tg = window.Telegram.WebApp;
         const SAVE_KEY = 'coffeeEmpireSave';
@@ -151,7 +145,6 @@
 
         function updateUI() {
             document.getElementById('money-val').innerText = Math.floor(money);
-            document.getElementById('energy-val').innerText = energy;
             document.getElementById('day-val').innerText = day;
             document.getElementById('next-day').innerText = day + 1;
             
@@ -161,29 +154,16 @@
             document.getElementById('point-cost').innerText = pointCost;
             document.getElementById('machine-lvl').innerText = machineLevel;
             document.getElementById('machine-cost').innerText = machineCost;
-
-            // Управление кнопкой открытия дня
-            const btn = document.getElementById('open-day-btn');
-            if (energy < 1) {
-                btn.disabled = true;
-                btn.innerHTML = `Ждем энергию...`;
-            } else {
-                btn.disabled = false;
-                btn.innerHTML = `Открыть день ${day + 1}`;
-            }
         }
 
         function openDay() {
-            if (energy >= 1) {
-                let income = getIncome();
-                money += income;
-                energy -= 1;
-                day += 1;
-                updateUI();
-                saveGame();
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                alert(`День ${day-1} завершен!\nТы заработал: ${income} ₸`);
-            }
+            let income = getIncome();
+            money += income;
+            day += 1;
+            updateUI();
+            saveGame();
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            alert(`День ${day-1} завершен!\nТы заработал: ${income} ₸`);
         }
 
         function buyPoint() {
@@ -218,21 +198,10 @@
             element.classList.add('active');
         }
 
-        // --- ВОССТАНОВЛЕНИЕ ЭНЕРГИИ ---
-        function startEnergyRegen() {
-            setInterval(() => {
-                if (energy < MAX_ENERGY) {
-                    energy += 1;
-                    updateUI();
-                    saveGame();
-                }
-            }, ENERGY_REGEN_TIME);
-        }
-
         // СОХРАНЕНИЕ
         function saveGame() {
             const gameData = {
-                money: money, day: day, energy: energy,
+                money: money, day: day,
                 points: points, pointCost: pointCost,
                 machineLevel: machineLevel, machineCost: machineCost
             };
@@ -264,7 +233,6 @@
         function applyData(data) {
             money = data.money !== undefined ? data.money : money;
             day = data.day !== undefined ? data.day : day;
-            energy = data.energy !== undefined ? data.energy : energy;
             points = data.points !== undefined ? data.points : points;
             pointCost = data.pointCost !== undefined ? data.pointCost : pointCost;
             machineLevel = data.machineLevel !== undefined ? data.machineLevel : machineLevel;
@@ -274,7 +242,6 @@
 
         function finishLoading() {
             document.getElementById('loading-screen').style.display = 'none';
-            startEnergyRegen(); // Запускаем таймер восстановления энергии
         }
 
         tg.ready();
