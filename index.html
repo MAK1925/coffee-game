@@ -6,20 +6,10 @@
     <title>Кофейня: Империя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #2b2b2b;
-            --panel-bg: #3c3c3c;
-            --text-main: #ffffff;
-            --accent: #ffcc00;
-            --btn-bg: #4CAF50;
-            --nav-bg: #1e1e1e;
-            --danger: #e91e63;
-            --gray-bldg: #555;
-        }
+        :root { --bg-color: #2b2b2b; --panel-bg: #3c3c3c; --text-main: #ffffff; --accent: #ffcc00; --btn-bg: #4CAF50; --nav-bg: #1e1e1e; --danger: #e91e63; --gray-bldg: #555; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Экран загрузки */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
         .coffee-cup { position: relative; width: 80px; height: 80px; margin-bottom: 20px; }
         .cup { position: absolute; bottom: 0; left: 10px; width: 60px; height: 50px; background-color: #fff; border-radius: 0 0 30px 30px; border-top: 8px solid #d2a679; box-shadow: inset 0 -10px 0 rgba(0,0,0,0.1); }
@@ -32,18 +22,14 @@
         .loading-text { font-size: 18px; font-weight: bold; color: var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        /* Шапка */
         .top-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 13px; z-index: 10; }
-        .stat { font-weight: bold; }
-        .stat span { color: var(--accent); }
+        .stat { font-weight: bold; } .stat span { color: var(--accent); }
         .days-badge { display: flex; align-items: center; background: #222; padding: 5px 10px; border-radius: 20px; font-weight: bold; border: 1px solid #555; }
         .days-badge span { color: #4CAF50; margin-left: 5px; }
         .days-timer { font-size: 10px; color: #888; display: block; text-align: right; margin-top: 2px; }
 
         .content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 90px; }
-        .tab-pane { display: none; text-align: left; }
-        .tab-pane.active { display: block; }
-        
+        .tab-pane { display: none; text-align: left; } .tab-pane.active { display: block; }
         h1 { font-size: 22px; margin-bottom: 15px; text-align: center; }
         h2 { font-size: 16px; margin-bottom: 10px; color: var(--accent); }
         h3 { font-size: 14px; margin-bottom: 5px; color: #fff; }
@@ -51,22 +37,14 @@
         
         button { border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; padding: 12px; font-size: 14px; width: 100%; }
         button:active { transform: scale(0.97); }
-        
-        .btn-main { background-color: var(--accent); color: #000; margin-bottom: 15px; box-shadow: 0 4px 0 #b38f00; font-size: 16px; padding: 15px;}
-        .btn-main:active { box-shadow: 0 0 0 #b38f00; transform: translateY(4px); }
+        .btn-main { background-color: var(--accent); color: #000; margin-bottom: 15px; box-shadow: 0 4px 0 #b38f00; font-size: 16px; padding: 15px; }
         .btn-main.tired { background-color: #888; box-shadow: 0 4px 0 #555; color: #ddd; }
-
         .btn-buy { background-color: var(--btn-bg); color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #2e7d32; }
-        .btn-buy:active { box-shadow: 0 0 0 #2e7d32; transform: translateY(4px); }
-
         .btn-secondary { background-color: #555; color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #333; }
-        .btn-secondary:active { box-shadow: 0 0 0 #333; transform: translateY(4px); }
-
         .btn-danger { background-color: var(--danger); color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #b0124a; }
         
         .card { background-color: var(--panel-bg); border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
-        /* Город (Карта) */
         .city-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
         .point-card { background: #444; padding: 15px; border-radius: 10px; border-left: 5px solid var(--accent); position: relative; }
         .point-card.empty { border-left: 5px solid var(--gray-bldg); background: #333; opacity: 0.8; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100px; }
@@ -76,24 +54,20 @@
         .upgrade-btn { width: auto; padding: 5px 10px; font-size: 11px; background: #555; border-radius: 5px; }
         .upgrade-btn.active { background: var(--btn-bg); }
 
-        /* Модалка */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--panel-bg); padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; border: 2px solid var(--accent); }
-        .modal-btn { margin-top: 10px; }
-
-        /* Кнопка Событие */
         .event-btn { position: fixed; bottom: 80px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background-color: var(--danger); color: white; font-size: 30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 200; animation: pulse-event 2s infinite; display: none; }
         @keyframes pulse-event { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        /* Нижнее меню */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--nav-bg); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #444; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; cursor: pointer; padding: 5px; }
         .nav-item.active { color: var(--accent); }
         .nav-icon { font-size: 20px; margin-bottom: 3px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--panel-bg); padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; text-align: center; border: 2px solid var(--accent); }
+        .modal-btn { margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div id="loading-screen">
         <div class="coffee-cup"><div class="steam"></div><div class="steam"></div><div class="steam"></div><div class="cup"></div></div>
         <div class="loading-text">Готовим кофе...</div>
@@ -109,7 +83,6 @@
     </div>
 
     <div class="content">
-        <!-- Главный экран -->
         <div id="tab-coffee" class="tab-pane active">
             <h1>Твоя Кофейня</h1>
             <div class="card">
@@ -121,70 +94,52 @@
             </div>
         </div>
 
-        <!-- ГОРОД (Обновлено: Карта и Улучшения) -->
         <div id="tab-city" class="tab-pane">
             <h1>Карта Города</h1>
-            <div class="city-grid" id="city-grid">
-                <!-- Точки рендерятся в JS -->
-            </div>
+            <div class="city-grid" id="city-grid"></div>
         </div>
 
-        <!-- Сеть -->
         <div id="tab-net" class="tab-pane">
             <h1>Твоя Сеть</h1>
             <div class="card">
                 <h2>Управление всей сетью</h2>
-                <p>Подними цену сразу во всех точках.</p>
                 <button class="btn-secondary" onclick="changeAllPrices()">Поднять цену везде (+50)</button>
             </div>
-            
             <div class="card">
                 <h2>Управляющие</h2>
-                <p>Чем дороже управляющий, тем честнее он работает. Автоматически держит цены и зарплаты.</p>
                 <p>Статус: <strong id="manager-status">Нет управляющего</strong></p>
                 <p>Стоимость найма: <strong id="manager-cost">5000</strong> ₸</p>
                 <button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего</button>
             </div>
         </div>
 
-        <!-- Люди -->
         <div id="tab-people" class="tab-pane">
             <h1>Люди</h1>
             <div class="card">
                 <h2>Найм персонала</h2>
-                <p>Каждый бариста увеличивает прибыль на 10%.</p>
                 <p>Нанято: <strong id="barista-val">0</strong></p>
                 <p>Стоимость найма: <strong id="barista-cost">2000</strong> ₸</p>
                 <button class="btn-buy" onclick="hireBarista()">Нанять бариста</button>
             </div>
             <div class="card">
                 <h2>Твоя команда</h2>
-                <div id="baristas-list">
-                    <p>Пока никого нет.</p>
-                </div>
+                <div id="baristas-list"><p>Пока никого нет.</p></div>
             </div>
         </div>
 
-        <!-- Деньги -->
         <div id="tab-money" class="tab-pane">
             <h1>Деньги</h1>
-            
             <div class="card">
                 <h2>Налоги</h2>
-                <p>Упрощенка 4% (при доходе до 2.59 млрд в год).</p>
                 <p>Накоплено к уплате: <strong id="tax-val">0</strong> ₸</p>
                 <button class="btn-danger" onclick="payTaxes()">Оплатить налоги</button>
             </div>
-
             <div class="card">
                 <h2>Депозит (14% годовых)</h2>
                 <p>На депозите: <strong id="deposit-val">0</strong> ₸</p>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="btn-secondary" onclick="depositMoney(1000)">Вложить 1000</button>
-                    <button class="btn-secondary" onclick="withdrawDeposit()">Снять всё</button>
-                </div>
+                <button class="btn-secondary" onclick="depositMoney(1000)">Вложить 1000</button>
+                <button class="btn-secondary" onclick="withdrawDeposit()" style="margin-top:5px;">Снять всё</button>
             </div>
-
             <div class="card">
                 <h2>Кредит (до 30 млн)</h2>
                 <p>Текущий долг: <strong id="debt-val">0</strong> ₸</p>
@@ -193,12 +148,10 @@
             </div>
         </div>
 
-        <!-- Ещё -->
         <div id="tab-upgrades" class="tab-pane">
             <h1>Улучшения (Ещё)</h1>
             <div class="card">
                 <h2>Кофемашина</h2>
-                <p>Увеличивает доход с каждой точки.</p>
                 <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
                 <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
                 <button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button>
@@ -206,7 +159,6 @@
         </div>
     </div>
 
-    <!-- Кнопка События -->
     <div class="event-btn" id="event-btn" onclick="triggerEvent()">❗</div>
 
     <div class="bottom-nav">
@@ -218,56 +170,31 @@
         <div class="nav-item" onclick="switchTab('upgrades', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
     </div>
 
-    <!-- Модалка События -->
     <div class="modal" id="event-modal">
         <div class="modal-content">
             <h2 id="event-title">Событие!</h2>
-            <p id="event-desc">Описание события...</p>
+            <p id="event-desc"></p>
             <button class="btn-main modal-btn" id="event-opt1" onclick="resolveEvent(1)">Вариант 1</button>
             <button class="btn-secondary modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button>
         </div>
     </div>
 
     <script>
-        // Данные игры
-        let money = 500;
-        let day = 1;
-        let pointCost = 1000;
-        let machineLevel = 1;
-        let machineCost = 500;
-        let baristaCost = 2000;
-        
-        let fullDays = 15;
-        const MAX_FULL_DAYS = 100;
-        let dayTimerSeconds = 300;
-
-        // НОВОЕ: Точки теперь имеют улучшения и уровень
-        // upgrades: umbrella (зонт), sign (вывеска), board (доска), music (музыка)
-        let pointsList = [
-            { id: 1, price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0 }
-        ];
-
-        let baristasList = []; 
-        let hasManager = false;
-        let managerCost = 5000;
-        let taxAccumulated = 0;
-        let depositBalance = 0;
-        let debt = 0;
-
-        let hasActiveEvent = false;
-        let currentEventData = null;
-        let eventCooldown = 0;
+        let money = 500, day = 1, pointCost = 1000, machineLevel = 1, machineCost = 500, baristaCost = 2000;
+        let fullDays = 15; const MAX_FULL_DAYS = 100; let dayTimerSeconds = 300;
+        let pointsList = [{ id: 1, price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0 }];
+        let baristasList = []; let hasManager = false; let managerCost = 5000;
+        let taxAccumulated = 0, depositBalance = 0, debt = 0;
+        let hasActiveEvent = false, currentEventData = null, eventCooldown = 0;
 
         const tg = window.Telegram.WebApp;
-        const SAVE_KEY = 'coffeeEmpireSave_v6';
+        const SAVE_KEY = 'coffeeEmpireSave_v7'; // Обновил версию сейва
 
         const NAMES = ["Асхат", "Ерлан", "Айгерим", "Бауыржан", "Ника", "Сауле", "Болат", "Дана"];
         const TRAITS = ["Трудяга", "Веселый", "Ворчун", "Соня", "Профи"];
 
         function getIncome() {
             let totalBasePrice = 0;
-            
-            // Считаем доход с каждой точки с учетом улучшений
             pointsList.forEach(p => {
                 let pPrice = p.price;
                 if (p.upgrades.umbrella) pPrice += 10;
@@ -276,12 +203,9 @@
                 if (p.upgrades.music) pPrice += 25;
                 totalBasePrice += pPrice;
             });
-
             let baristaBonus = 1 + (baristasList.length * 0.1);
             let managerBonus = hasManager ? 1.15 : 1;
-            
             let baseIncome = totalBasePrice * machineLevel * baristaBonus * managerBonus;
-            
             if (fullDays === 0) return Math.floor(baseIncome * 0.6);
             return Math.floor(baseIncome);
         }
@@ -334,6 +258,9 @@
                     let moodIcon = b.mood > 70 ? "😊" : (b.mood > 30 ? "😐" : "😠");
                     let div = document.createElement('div');
                     div.className = 'barista-item';
+                    div.style.borderBottom = "1px solid #555";
+                    div.style.paddingBottom = "10px";
+                    div.style.marginBottom = "10px";
                     div.innerHTML = `
                         <h3>${b.name} <span style="font-size:12px; color:#aaa;">(${b.trait})</span></h3>
                         <p>Настроение: ${moodIcon} ${b.mood}%</p>
@@ -353,13 +280,11 @@
             else document.getElementById('event-btn').style.display = 'none';
         }
 
-        // НОВОЕ: Отрисовка карты города
         function renderCityMap() {
             let container = document.getElementById('city-grid');
             container.innerHTML = '';
 
             pointsList.forEach((point, index) => {
-                // Определяем тип здания (киоск, павильон, большая кофейня)
                 let type = "🏪";
                 if (point.upgrades.board) type = "🏬";
                 if (point.upgrades.sign && point.upgrades.umbrella) type = "🏢";
@@ -383,7 +308,6 @@
                 container.appendChild(card);
             });
 
-            // Серые здания (свободные места под новые точки)
             let emptyCard = document.createElement('div');
             emptyCard.className = 'point-card empty';
             emptyCard.innerHTML = `
@@ -394,48 +318,24 @@
             container.appendChild(emptyCard);
         }
 
-        // НОВОЕ: Покупка улучшений
         function buyUpgrade(pointIndex, upgradeName, cost) {
             let point = pointsList[pointIndex];
-            if (point.upgrades[upgradeName]) {
-                alert("Это улучшение уже куплено!");
-                return;
-            }
-            if (money >= cost) {
-                money -= cost;
-                point.upgrades[upgradeName] = true;
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+            if (point.upgrades[upgradeName]) return alert("Уже куплено!");
+            if (money >= cost) { money -= cost; point.upgrades[upgradeName] = true; updateUI(); saveGame(); } 
+            else alert("Недостаточно денег!");
         }
 
-        // НОВОЕ: Покупка второй стойки
         function buySecondCounter(pointIndex, cost) {
-            if (money >= cost) {
-                money -= cost;
-                pointsList[pointIndex].secondCounter = true;
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+            if (money >= cost) { money -= cost; pointsList[pointIndex].secondCounter = true; updateUI(); saveGame(); } 
+            else alert("Недостаточно денег!");
         }
 
-        // Таймер дней
         setInterval(() => {
             if (fullDays < MAX_FULL_DAYS) {
                 dayTimerSeconds--;
-                if (dayTimerSeconds <= 0) {
-                    fullDays++;
-                    dayTimerSeconds = 300;
-                    saveGame();
-                }
+                if (dayTimerSeconds <= 0) { fullDays++; dayTimerSeconds = 300; saveGame(); }
                 updateUI();
-            } else {
-                dayTimerSeconds = 300;
-            }
+            } else { dayTimerSeconds = 300; }
         }, 1000);
 
         setInterval(() => {
@@ -448,171 +348,84 @@
 
         function openDay() {
             let income = getIncome();
-            let isTired = fullDays === 0;
-            
             money += income;
-            
             let tax = Math.floor(income * 0.04);
             taxAccumulated += tax;
 
             if (baristasList.length > 0) {
                 let salaries = baristasList.length * 200;
                 money -= salaries;
-                if (money < 0) {
-                    baristasList.forEach(b => b.mood = Math.max(0, b.mood - 10));
-                }
+                if (money < 0) baristasList.forEach(b => b.mood = Math.max(0, b.mood - 10));
             }
-
             day++;
             if (fullDays > 0) fullDays--;
 
-            if (!hasActiveEvent && eventCooldown <= 0) {
-                if (Math.random() < 0.3) spawnRandomEvent();
-            } else if (eventCooldown > 0) eventCooldown--;
+            if (!hasActiveEvent && eventCooldown <= 0) { if (Math.random() < 0.3) spawnRandomEvent(); } 
+            else if (eventCooldown > 0) eventCooldown--;
 
-            updateUI();
-            saveGame();
+            updateUI(); saveGame();
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
 
         function hireManager() {
             if (!hasManager && money >= managerCost) {
-                money -= managerCost;
-                hasManager = true;
+                money -= managerCost; hasManager = true;
                 pointsList.forEach(p => p.price = Math.floor(p.price * 1.2));
-                updateUI();
-                saveGame();
-                alert("Управляющий нанят! Цены подняты на 20% во всей сети.");
-            } else if (hasManager) {
-                alert("У вас уже есть управляющий.");
-            } else {
-                alert("Недостаточно денег!");
-            }
+                updateUI(); saveGame(); alert("Управляющий нанят!");
+            } else alert(hasManager ? "Уже есть управляющий." : "Недостаточно денег!");
         }
 
         function hireBarista() {
             if (money >= baristaCost) {
-                // Проверяем, есть ли куда нанимать (вместимость точек)
                 let totalCapacity = 0;
                 pointsList.forEach(p => totalCapacity += (p.secondCounter ? 6 : 2));
-                
-                if (baristasList.length >= totalCapacity) {
-                    alert("Нет свободных мест! Постройте вторую стойку или откройте новую точку.");
-                    return;
-                }
+                if (baristasList.length >= totalCapacity) return alert("Нет мест! Купите 2-ю стойку или откройте точку.");
 
                 money -= baristaCost;
                 let randomName = NAMES[Math.floor(Math.random() * NAMES.length)];
                 let randomTrait = TRAITS[Math.floor(Math.random() * TRAITS.length)];
-                
-                baristasList.push({
-                    id: Date.now(),
-                    name: randomName,
-                    trait: randomTrait,
-                    mood: 100
-                });
-                
+                baristasList.push({ id: Date.now(), name: randomName, trait: randomTrait, mood: 100 });
                 baristaCost = Math.floor(baristaCost * 1.5);
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+                updateUI(); saveGame();
+            } else alert("Недостаточно денег!");
         }
 
         function praiseBarista(index) {
             let b = baristasList[index];
-            if (b.mood < 100) {
-                b.mood = Math.min(100, b.mood + 20);
-                updateUI();
-                saveGame();
-            } else {
-                alert(b.name + " и так счастлив!");
-            }
+            if (b.mood < 100) { b.mood = Math.min(100, b.mood + 20); updateUI(); saveGame(); } 
+            else alert(b.name + " и так счастлив!");
         }
 
         function payTaxes() {
             if (taxAccumulated > 0) {
-                if (money >= taxAccumulated) {
-                    money -= taxAccumulated;
-                    taxAccumulated = 0;
-                    updateUI();
-                    saveGame();
-                    alert("Налоги уплачены!");
-                } else {
-                    alert("Недостаточно денег для уплаты налогов!");
-                }
-            } else {
-                alert("У вас нет накопленных налогов.");
-            }
+                if (money >= taxAccumulated) { money -= taxAccumulated; taxAccumulated = 0; updateUI(); saveGame(); alert("Налоги уплачены!"); } 
+                else alert("Недостаточно денег!");
+            } else alert("Нет накопленных налогов.");
         }
 
         function depositMoney(amount) {
-            if (money >= amount) {
-                money -= amount;
-                depositBalance += amount;
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+            if (money >= amount) { money -= amount; depositBalance += amount; updateUI(); saveGame(); } 
+            else alert("Недостаточно денег!");
         }
 
         function withdrawDeposit() {
-            if (depositBalance > 0) {
-                money += depositBalance;
-                depositBalance = 0;
-                updateUI();
-                saveGame();
-            }
+            if (depositBalance > 0) { money += depositBalance; depositBalance = 0; updateUI(); saveGame(); }
         }
 
         function takeLoan(amount) {
-            money += amount;
-            debt += amount * 1.2;
-            updateUI();
-            saveGame();
+            money += amount; debt += amount * 1.2; updateUI(); saveGame();
         }
 
         function repayLoan() {
             if (debt > 0) {
-                if (money >= debt) {
-                    money -= debt;
-                    debt = 0;
-                    updateUI();
-                    saveGame();
-                    alert("Кредит погашен!");
-                } else {
-                    alert("Недостаточно денег для погашения долга!");
-                }
-            } else {
-                alert("У вас нет долгов.");
-            }
+                if (money >= debt) { money -= debt; debt = 0; updateUI(); saveGame(); alert("Кредит погашен!"); } 
+                else alert("Недостаточно денег!");
+            } else alert("У вас нет долгов.");
         }
 
         const EVENTS = [
-            {
-                title: "Бариста просит прибавку",
-                desc: "Твой лучший бариста говорит, что ему мало платят.",
-                opt1: "Дать прибавку (-1000 ₸)",
-                opt2: "Отказать (Риск)",
-                action1: () => { if(money >= 1000) { money -= 1000; return "Бариста доволен!"; } else return "Не хватило денег!"; },
-                action2: () => { 
-                    if (Math.random() < 0.5) { 
-                        if (baristasList.length > 0) { baristasList.pop(); return "Бариста уволился!"; }
-                        return "Бариста остался."; 
-                    }
-                    return "Бариста остался, но ворчит."; 
-                }
-            },
-            {
-                title: "Блогер хочет обзор",
-                desc: "Известный блогер Ника хочет сделать обзор.",
-                opt1: "Заплатить за рекламу (-2000 ₸)",
-                opt2: "Отказаться",
-                action1: () => { if(money >= 2000) { money -= 2000; pointsList[0].price += 20; return "Приток гостей!"; } else return "Не хватило денег!"; },
-                action2: () => { return "Вы отказались."; }
-            }
+            { title: "Бариста просит прибавку", desc: "Твой бариста просит больше денег.", opt1: "Дать прибавку (-1000 ₸)", opt2: "Отказать", action1: () => { if(money >= 1000) { money -= 1000; return "Бариста доволен!"; } else return "Не хватило денег!"; }, action2: () => { if (Math.random() < 0.5 && baristasList.length > 0) { baristasList.pop(); return "Бариста уволился!"; } return "Бариста остался."; } },
+            { title: "Блогер хочет обзор", desc: "Блогер Ника хочет обзор.", opt1: "Заплатить (-2000 ₸)", opt2: "Отказаться", action1: () => { if(money >= 2000) { money -= 2000; pointsList[0].price += 20; return "Приток гостей!"; } else return "Не хватило денег!"; }, action2: () => "Вы отказались." }
         ];
 
         function spawnRandomEvent() {
@@ -625,63 +438,28 @@
             updateUI();
         }
 
-        function triggerEvent() {
-            if (!hasActiveEvent) return;
-            document.getElementById('event-modal').style.display = 'flex';
-        }
-
+        function triggerEvent() { if (hasActiveEvent) document.getElementById('event-modal').style.display = 'flex'; }
         function resolveEvent(choice) {
-            let msg = "";
-            if (choice === 1) msg = currentEventData.action1();
-            else msg = currentEventData.action2();
-            hasActiveEvent = false;
-            eventCooldown = 3;
+            let msg = (choice === 1) ? currentEventData.action1() : currentEventData.action2();
+            hasActiveEvent = false; eventCooldown = 3;
             document.getElementById('event-modal').style.display = 'none';
-            updateUI();
-            saveGame();
-            alert(msg);
+            updateUI(); saveGame(); alert(msg);
         }
 
         function buyPoint() {
             if (money >= pointCost) {
                 money -= pointCost;
-                pointsList.push({ 
-                    id: Date.now(), 
-                    price: 100, 
-                    upgrades: { umbrella: false, sign: false, board: false, music: false }, 
-                    secondCounter: false,
-                    baristasAssigned: 0
-                });
+                pointsList.push({ id: Date.now(), price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0 });
                 pointCost = Math.floor(pointCost * 2.5);
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+                updateUI(); saveGame();
+            } else alert("Недостаточно денег!");
         }
 
-        function changePointPrice(index) {
-            pointsList[index].price += 50;
-            updateUI();
-            saveGame();
-        }
-
-        function changeAllPrices() {
-            pointsList.forEach(point => { point.price += 50; });
-            updateUI();
-            saveGame();
-        }
+        function changeAllPrices() { pointsList.forEach(point => { point.price += 50; }); updateUI(); saveGame(); }
 
         function upgradeMachine() {
-            if (money >= machineCost) {
-                money -= machineCost;
-                machineLevel += 1;
-                machineCost = Math.floor(machineCost * 1.8);
-                updateUI();
-                saveGame();
-            } else {
-                alert("Недостаточно денег!");
-            }
+            if (money >= machineCost) { money -= machineCost; machineLevel += 1; machineCost = Math.floor(machineCost * 1.8); updateUI(); saveGame(); } 
+            else alert("Недостаточно денег!");
         }
 
         function switchTab(tabName, element) {
@@ -692,12 +470,7 @@
         }
 
         function saveGame() {
-            const gameData = {
-                money, day, fullDays, dayTimerSeconds, pointsList, pointCost,
-                machineLevel, machineCost, baristaCost, baristasList,
-                hasManager, managerCost, taxAccumulated, depositBalance, debt,
-                hasActiveEvent, currentEventData, eventCooldown
-            };
+            const gameData = { money, day, fullDays, dayTimerSeconds, pointsList, pointCost, machineLevel, machineCost, baristaCost, baristasList, hasManager, managerCost, taxAccumulated, depositBalance, debt, hasActiveEvent, currentEventData, eventCooldown };
             const dataString = JSON.stringify(gameData);
             localStorage.setItem(SAVE_KEY, dataString);
             if (tg.CloudStorage) tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {});
@@ -705,51 +478,30 @@
 
         function loadGame() {
             let localData = localStorage.getItem(SAVE_KEY);
-            if (localData) {
-                try { applyData(JSON.parse(localData)); } catch(e) {}
-            }
+            if (localData) { try { applyData(JSON.parse(localData)); } catch(e) {} }
             if (tg.CloudStorage) {
                 tg.CloudStorage.getItem(SAVE_KEY, (err, cloudData) => {
-                    if (!err && cloudData) {
-                        try { applyData(JSON.parse(cloudData)); } catch(e) {}
-                    }
+                    if (!err && cloudData) { try { applyData(JSON.parse(cloudData)); } catch(e) {} }
                     finishLoading();
                 });
-            } else {
-                finishLoading();
-            }
+            } else finishLoading();
         }
 
         function applyData(data) {
-            money = data.money ?? money;
-            day = data.day ?? day;
-            fullDays = data.fullDays ?? fullDays;
-            dayTimerSeconds = data.dayTimerSeconds ?? 300;
-            pointsList = data.pointsList ?? pointsList;
-            pointCost = data.pointCost ?? pointCost;
-            machineLevel = data.machineLevel ?? machineLevel;
-            machineCost = data.machineCost ?? machineCost;
-            baristaCost = data.baristaCost ?? baristaCost;
-            baristasList = data.baristasList ?? [];
-            hasManager = data.hasManager ?? false;
-            managerCost = data.managerCost ?? 5000;
-            taxAccumulated = data.taxAccumulated ?? 0;
-            depositBalance = data.depositBalance ?? 0;
-            debt = data.debt ?? 0;
-            hasActiveEvent = data.hasActiveEvent ?? false;
-            currentEventData = data.currentEventData ?? null;
-            eventCooldown = data.eventCooldown ?? 0;
+            money = data.money ?? money; day = data.day ?? day;
+            fullDays = data.fullDays ?? fullDays; dayTimerSeconds = data.dayTimerSeconds ?? 300;
+            pointsList = data.pointsList ?? pointsList; pointCost = data.pointCost ?? pointCost;
+            machineLevel = data.machineLevel ?? machineLevel; machineCost = data.machineCost ?? machineCost;
+            baristaCost = data.baristaCost ?? baristaCost; baristasList = data.baristasList ?? [];
+            hasManager = data.hasManager ?? false; managerCost = data.managerCost ?? 5000;
+            taxAccumulated = data.taxAccumulated ?? 0; depositBalance = data.depositBalance ?? 0; debt = data.debt ?? 0;
+            hasActiveEvent = data.hasActiveEvent ?? false; currentEventData = data.currentEventData ?? null; eventCooldown = data.eventCooldown ?? 0;
             updateUI();
         }
 
-        function finishLoading() {
-            document.getElementById('loading-screen').style.display = 'none';
-        }
+        function finishLoading() { document.getElementById('loading-screen').style.display = 'none'; }
 
-        tg.ready();
-        tg.expand();
-        updateUI();
-        loadGame();
+        tg.ready(); tg.expand(); updateUI(); loadGame();
     </script>
 </body>
 </html>
