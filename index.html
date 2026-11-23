@@ -54,6 +54,9 @@
         
         .btn-buy { background-color: var(--btn-bg); color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #2e7d32; }
         .btn-buy:active { box-shadow: 0 0 0 #2e7d32; transform: translateY(4px); }
+
+        .btn-secondary { background-color: #555; color: #fff; margin-top: 10px; box-shadow: 0 4px 0 #333; }
+        .btn-secondary:active { box-shadow: 0 0 0 #333; transform: translateY(4px); }
         
         .card { background-color: var(--panel-bg); border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
@@ -81,17 +84,20 @@
     </div>
 
     <div class="content">
+        <!-- Главный экран -->
         <div id="tab-coffee" class="tab-pane active">
             <h1>Твоя Кофейня</h1>
             <div class="card">
                 <h2>Главный экран</h2>
                 <p>Здесь ты управляешь своей империей.</p>
                 <p>Точек в сети: <strong id="points-val">1</strong></p>
+                <p>Цена за чашку: <strong id="price-val">100</strong> ₸</p>
                 <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
                 <button class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
             </div>
         </div>
 
+        <!-- Сеть -->
         <div id="tab-net" class="tab-pane">
             <h1>Твоя Сеть</h1>
             <div class="card">
@@ -100,8 +106,26 @@
                 <p>Стоимость: <strong id="point-cost">1000</strong> ₸</p>
                 <button class="btn-buy" onclick="buyPoint()">Открыть точку</button>
             </div>
+            <div class="card">
+                <h2>Управление ценой</h2>
+                <p>Чем выше цена, тем больше прибыль.</p>
+                <button class="btn-secondary" onclick="changePrice(50)">Поднять цену (+50)</button>
+            </div>
         </div>
 
+        <!-- Люди (Новая вкладка) -->
+        <div id="tab-people" class="tab-pane">
+            <h1>Люди</h1>
+            <div class="card">
+                <h2>Бариста</h2>
+                <p>Увеличивает прибыль на 10% за каждого.</p>
+                <p>Нанято: <strong id="barista-val">0</strong></p>
+                <p>Стоимость: <strong id="barista-cost">2000</strong> ₸</p>
+                <button class="btn-buy" onclick="hireBarista()">Нанять бариста</button>
+            </div>
+        </div>
+
+        <!-- Улучшения -->
         <div id="tab-upgrades" class="tab-pane">
             <h1>Улучшения</h1>
             <div class="card">
@@ -114,7 +138,6 @@
         </div>
 
         <div id="tab-city" class="tab-pane"><h1>Город</h1><p>Карта в разработке.</p></div>
-        <div id="tab-people" class="tab-pane"><h1>Люди</h1><p>Найм персонала в разработке.</p></div>
         <div id="tab-money" class="tab-pane"><h1>Деньги</h1><p>Кредиты и депозиты в разработке.</p></div>
     </div>
 
@@ -135,12 +158,20 @@
         let pointCost = 1000;
         let machineLevel = 1;
         let machineCost = 500;
+        
+        // Новые данные
+        let baristas = 0;
+        let baristaCost = 2000;
+        let price = 100; // Цена за чашку
 
         const tg = window.Telegram.WebApp;
         const SAVE_KEY = 'coffeeEmpireSave';
 
         function getIncome() {
-            return 100 * points * machineLevel;
+            // Базовая прибыль (100) + надбавка за цену + бонус от бариста + уровень кофемашины
+            let base = 100 + (price - 100); 
+            let baristaBonus = 1 + (baristas * 0.1); // Каждый бариста дает +10% к прибыли
+            return Math.floor(base * points * machineLevel * baristaBonus);
         }
 
         function updateUI() {
@@ -149,11 +180,15 @@
             document.getElementById('next-day').innerText = day + 1;
             
             document.getElementById('points-val').innerText = points;
+            document.getElementById('price-val').innerText = price;
             document.getElementById('income-val').innerText = getIncome();
             
             document.getElementById('point-cost').innerText = pointCost;
             document.getElementById('machine-lvl').innerText = machineLevel;
             document.getElementById('machine-cost').innerText = machineCost;
+
+            document.getElementById('barista-val').innerText = baristas;
+            document.getElementById('barista-cost').innerText = baristaCost;
         }
 
         function openDay() {
@@ -190,6 +225,24 @@
             }
         }
 
+        function changePrice(amount) {
+            price += amount;
+            updateUI();
+            saveGame();
+        }
+
+        function hireBarista() {
+            if (money >= baristaCost) {
+                money -= baristaCost;
+                baristas += 1;
+                baristaCost = Math.floor(baristaCost * 1.5);
+                updateUI();
+                saveGame();
+            } else {
+                alert("Недостаточно денег!");
+            }
+        }
+
         function switchTab(tabName, element) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabName).classList.add('active');
@@ -203,7 +256,8 @@
             const gameData = {
                 money: money, day: day,
                 points: points, pointCost: pointCost,
-                machineLevel: machineLevel, machineCost: machineCost
+                machineLevel: machineLevel, machineCost: machineCost,
+                baristas: baristas, baristaCost: baristaCost, price: price
             };
             const dataString = JSON.stringify(gameData);
             localStorage.setItem(SAVE_KEY, dataString);
@@ -237,6 +291,9 @@
             pointCost = data.pointCost !== undefined ? data.pointCost : pointCost;
             machineLevel = data.machineLevel !== undefined ? data.machineLevel : machineLevel;
             machineCost = data.machineCost !== undefined ? data.machineCost : machineCost;
+            baristas = data.baristas !== undefined ? data.baristas : baristas;
+            baristaCost = data.baristaCost !== undefined ? data.baristaCost : baristaCost;
+            price = data.price !== undefined ? data.price : price;
             updateUI();
         }
 
