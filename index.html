@@ -6,7 +6,7 @@
     <title>Кофейня: Империя</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --bg-color: #2b2b2b; --panel-bg: #3c3c3c; --text-main: #ffffff; --accent: #ffcc00; --btn-bg: #4CAF50; --nav-bg: #1e1e1e; --danger: #e91e63; --gray-bldg: #555; }
+        :root { --bg-color: #2b2b2b; --panel-bg: #3c3c3c; --text-main: #ffffff; --accent: #ffcc00; --btn-bg: #4CAF50; --nav-bg: #1e1e1e; --danger: #e91e63; --gray-bldg: #555; --neighbor: #e91e63; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
@@ -48,6 +48,7 @@
         .city-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
         .point-card { background: #444; padding: 15px; border-radius: 10px; border-left: 5px solid var(--accent); position: relative; }
         .point-card.empty { border-left: 5px solid var(--gray-bldg); background: #333; opacity: 0.8; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100px; }
+        .neighbor-card { border-left: 5px solid var(--neighbor); background: #333; margin-top: 10px; }
         .point-icon { font-size: 24px; margin-right: 10px; }
         .point-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .upgrades-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
@@ -108,8 +109,7 @@
             <div class="card">
                 <h2>Управляющие</h2>
                 <p>Статус: <strong id="manager-status">Нет управляющего</strong></p>
-                <p>Стоимость найма: <strong id="manager-cost">5000</strong> ₸</p>
-                <button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего</button>
+                <button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего (5000 ₸)</button>
             </div>
         </div>
 
@@ -148,10 +148,20 @@
             </div>
         </div>
 
-        <div id="tab-upgrades" class="tab-pane">
-            <h1>Улучшения (Ещё)</h1>
+        <div id="tab-more" class="tab-pane">
+            <h1>Ещё</h1>
             <div class="card">
-                <h2>Кофемашина</h2>
+                <h2>Таблица лидеров</h2>
+                <div id="leaderboard-list"></div>
+            </div>
+            <div class="card">
+                <h2>Журнал уведомлений</h2>
+                <div id="notification-log" style="font-size:12px; color:#aaa; max-height:200px; overflow-y:auto;">
+                    <p>Пока тихо...</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Кофемашина (Улучшение)</h2>
                 <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
                 <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
                 <button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button>
@@ -167,7 +177,7 @@
         <div class="nav-item active" onclick="switchTab('coffee', this)"><div class="nav-icon">☕</div><div>Кофейня</div></div>
         <div class="nav-item" onclick="switchTab('people', this)"><div class="nav-icon">👥</div><div>Люди</div></div>
         <div class="nav-item" onclick="switchTab('money', this)"><div class="nav-icon">💰</div><div>Деньги</div></div>
-        <div class="nav-item" onclick="switchTab('upgrades', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
+        <div class="nav-item" onclick="switchTab('more', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
     </div>
 
     <div class="modal" id="event-modal">
@@ -179,15 +189,24 @@
         </div>
     </div>
     <script>
+        // Базовые данные
         let money = 500, day = 1, pointCost = 1000, machineLevel = 1, machineCost = 500, baristaCost = 2000;
         let fullDays = 15; const MAX_FULL_DAYS = 100; let dayTimerSeconds = 300;
-        let pointsList = [{ id: 1, price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0 }];
+        let pointsList = [{ id: 1, price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0, wins: 0 }];
         let baristasList = []; let hasManager = false; let managerCost = 5000;
         let taxAccumulated = 0, depositBalance = 0, debt = 0;
         let hasActiveEvent = false, currentEventData = null, eventCooldown = 0;
+        
+        // НОВОЕ: Боты-соседи и Таблица лидеров
+        let bots = [
+            { name: "Болат-ага", money: 1500, points: 1, cups: 120 },
+            { name: "Сауле", money: 3000, points: 2, cups: 250 },
+            { name: "Ерлан", money: 8000, points: 3, cups: 600 }
+        ];
+        let notificationLogs = ["Добро пожаловать в игру!"];
 
         const tg = window.Telegram.WebApp;
-        const SAVE_KEY = 'coffeeEmpireSave_v9';
+        const SAVE_KEY = 'coffeeEmpireSave_v10'; // Обновил версию
 
         const NAMES = ["Асхат", "Ерлан", "Айгерим", "Бауыржан", "Ника", "Сауле", "Болат", "Дана"];
         const TRAITS = ["Трудяга", "Веселый", "Ворчун", "Соня", "Профи"];
@@ -239,8 +258,6 @@
             
             document.getElementById('manager-status').innerText = hasManager ? "Работает ✅" : "Нет управляющего";
             document.getElementById('manager-status').style.color = hasManager ? "#4CAF50" : "#bbb";
-            document.getElementById('manager-cost').innerText = managerCost;
-            document.getElementById('btn-hire-manager').innerText = hasManager ? "Управляющий уже нанят" : "Нанять управляющего";
             document.getElementById('btn-hire-manager').disabled = hasManager;
             if (hasManager) document.getElementById('btn-hire-manager').style.opacity = "0.5";
 
@@ -256,9 +273,7 @@
                     let moodIcon = b.mood > 70 ? "😊" : (b.mood > 30 ? "😐" : "😠");
                     let div = document.createElement('div');
                     div.className = 'barista-item';
-                    div.style.borderBottom = "1px solid #555";
-                    div.style.paddingBottom = "10px";
-                    div.style.marginBottom = "10px";
+                    div.style.borderBottom = "1px solid #555"; div.style.paddingBottom = "10px"; div.style.marginBottom = "10px";
                     div.innerHTML = `
                         <h3>${b.name} <span style="font-size:12px; color:#aaa;">(${b.trait})</span></h3>
                         <p>Настроение: ${moodIcon} ${b.mood}%</p>
@@ -273,6 +288,7 @@
             document.getElementById('debt-val').innerText = Math.floor(debt).toLocaleString('ru-RU');
 
             renderCityMap();
+            renderLeaderboard();
 
             if (hasActiveEvent) document.getElementById('event-btn').style.display = 'flex';
             else document.getElementById('event-btn').style.display = 'none';
@@ -282,10 +298,14 @@
             let container = document.getElementById('city-grid');
             container.innerHTML = '';
 
+            // Твои точки
             pointsList.forEach((point, index) => {
                 let type = "🏪";
                 if (point.upgrades && point.upgrades.board) type = "🏬";
                 if (point.upgrades && point.upgrades.sign && point.upgrades.umbrella) type = "🏢";
+
+                // Генерируем случайного соседа для этой точки (для визуала и боя)
+                let neighborPower = 50 + (index * 30) + (machineLevel * 10); 
 
                 let card = document.createElement('div');
                 card.className = 'point-card';
@@ -294,18 +314,25 @@
                         <div><span class="point-icon">${type}</span> <strong>Точка №${index + 1}</strong></div>
                         <div style="color:var(--accent); font-weight:bold;">${point.price} ₸</div>
                     </div>
-                    <p>Бариста: ${point.baristasAssigned || 0} / ${point.secondCounter ? 6 : 2}</p>
+                    <p>Бариста: ${point.baristasAssigned || 0} / ${point.secondCounter ? 6 : 2} | Кубки: 🏆 ${point.wins || 0}</p>
                     <div class="upgrades-list">
                         <button class="upgrade-btn ${point.upgrades && point.upgrades.umbrella ? 'active' : ''}" onclick="buyUpgrade(${index}, 'umbrella', 500)">☂️ Зонт (500)</button>
                         <button class="upgrade-btn ${point.upgrades && point.upgrades.sign ? 'active' : ''}" onclick="buyUpgrade(${index}, 'sign', 1000)">🪧 Вывеска (1000)</button>
                         <button class="upgrade-btn ${point.upgrades && point.upgrades.board ? 'active' : ''}" onclick="buyUpgrade(${index}, 'board', 1500)">🖼️ Доска (1500)</button>
                         <button class="upgrade-btn ${point.upgrades && point.upgrades.music ? 'active' : ''}" onclick="buyUpgrade(${index}, 'music', 2000)">🎵 Музыка (2000)</button>
                     </div>
-                    ${!point.secondCounter ? `<button class="btn-secondary" style="margin-top:10px;" onclick="buySecondCounter(${index}, 5000)">Поставить 2-ю стойку (5000 ₸)</button>` : '<p style="color:#4CAF50; margin-top:10px; font-size:12px;">✅ Вторая стойка установлена (до 6 бариста)</p>'}
+                    ${!point.secondCounter ? `<button class="btn-secondary" style="margin-top:10px;" onclick="buySecondCounter(${index}, 5000)">Поставить 2-ю стойку (5000 ₸)</button>` : '<p style="color:#4CAF50; margin-top:10px; font-size:12px;">✅ Вторая стойка установлена</p>'}
+                    
+                    <div class="neighbor-card point-card" style="margin-top:15px; padding:10px;">
+                        <p style="color:var(--neighbor); font-weight:bold; font-size:12px;">🔴 Сосед: Кофейня "У Болата"</p>
+                        <p style="font-size:11px;">Сила района: ${neighborPower}</p>
+                        <button class="btn-danger" onclick="fightDistrict(${index}, ${neighborPower})">⚔️ Бой за район</button>
+                    </div>
                 `;
                 container.appendChild(card);
             });
 
+            // Свободное место
             let emptyCard = document.createElement('div');
             emptyCard.className = 'point-card empty';
             emptyCard.innerHTML = `
@@ -314,6 +341,53 @@
                 <button class="btn-buy" onclick="buyPoint()">Открыть точку</button>
             `;
             container.appendChild(emptyCard);
+        }
+
+        // НОВОЕ: Таблица лидеров (Боты + Игрок)
+        function renderLeaderboard() {
+            let container = document.getElementById('leaderboard-list');
+            container.innerHTML = '';
+            
+            // Собираем всех в один список
+            let allPlayers = [...bots];
+            allPlayers.push({ name: "Ты", money: money, points: pointsList.length, isPlayer: true });
+            
+            // Сортируем по деньгам
+            allPlayers.sort((a, b) => b.money - a.money);
+
+            allPlayers.forEach((p, i) => {
+                let div = document.createElement('div');
+                div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.padding = '5px 0'; div.style.borderBottom = '1px solid #444';
+                if (p.isPlayer) div.style.color = 'var(--accent)';
+                div.innerHTML = `<span>${i + 1}. ${p.name}</span> <span>${Math.floor(p.money).toLocaleString('ru-RU')} ₸</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        // НОВОЕ: Бой за район
+        function fightDistrict(pointIndex, neighborPower) {
+            // Сила игрока зависит от цены точки, кофемашины и бариста
+            let playerPower = pointsList[pointIndex].price + (machineLevel * 20) + (baristasList.length * 15);
+            
+            if (playerPower > neighborPower) {
+                let cupsWon = Math.floor(neighborPower / 10) + 1;
+                pointsList[pointIndex].wins = (pointsList[pointIndex].wins || 0) + cupsWon;
+                pointsList[pointIndex].price += 30; // Бонус к цене за победу
+                addLog(`🏆 Победа! Ты забрал район. Получено ${cupsWon} кубков и +30₸ к цене точки.`);
+                alert(`Победа! Твоя сила ${playerPower} против ${neighborPower}. Получено ${cupsWon} кубков!`);
+            } else {
+                addLog(`💀 Поражение в бою за район. Твоя сила ${playerPower} была меньше ${neighborPower}.`);
+                alert(`Поражение! Твоя сила ${playerPower}, а соседа ${neighborPower}. Прокачай точку!`);
+            }
+            updateUI();
+            saveGame();
+        }
+
+        function addLog(text) {
+            notificationLogs.unshift(text);
+            if (notificationLogs.length > 10) notificationLogs.pop();
+            let container = document.getElementById('notification-log');
+            container.innerHTML = notificationLogs.map(log => `<p>• ${log}</p>`).join('');
         }
 
         function buyUpgrade(pointIndex, upgradeName, cost) {
@@ -361,6 +435,9 @@
             if (!hasActiveEvent && eventCooldown <= 0) { if (Math.random() < 0.3) spawnRandomEvent(); } 
             else if (eventCooldown > 0) eventCooldown--;
 
+            // Симуляция активности ботов (они тоже зарабатывают)
+            bots.forEach(b => b.money += Math.floor(Math.random() * 200) + 50);
+
             updateUI(); saveGame();
             if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
         }
@@ -369,6 +446,7 @@
             if (!hasManager && money >= managerCost) {
                 money -= managerCost; hasManager = true;
                 pointsList.forEach(p => p.price = Math.floor(p.price * 1.2));
+                addLog("Нанят управляющий. Цены подняты на 20%.");
                 updateUI(); saveGame(); alert("Управляющий нанят!");
             } else alert(hasManager ? "Уже есть управляющий." : "Недостаточно денег!");
         }
@@ -377,13 +455,14 @@
             if (money >= baristaCost) {
                 let totalCapacity = 0;
                 pointsList.forEach(p => totalCapacity += (p.secondCounter ? 6 : 2));
-                if (baristasList.length >= totalCapacity) return alert("Нет мест! Купите 2-ю стойку или откройте точку.");
+                if (baristasList.length >= totalCapacity) return alert("Нет мест! Купите 2-ю стойку.");
 
                 money -= baristaCost;
                 let randomName = NAMES[Math.floor(Math.random() * NAMES.length)];
                 let randomTrait = TRAITS[Math.floor(Math.random() * TRAITS.length)];
                 baristasList.push({ id: Date.now(), name: randomName, trait: randomTrait, mood: 100 });
                 baristaCost = Math.floor(baristaCost * 1.5);
+                addLog(`Нанят новый бариста: ${randomName}`);
                 updateUI(); saveGame();
             } else alert("Недостаточно денег!");
         }
@@ -396,7 +475,7 @@
 
         function payTaxes() {
             if (taxAccumulated > 0) {
-                if (money >= taxAccumulated) { money -= taxAccumulated; taxAccumulated = 0; updateUI(); saveGame(); alert("Налоги уплачены!"); } 
+                if (money >= taxAccumulated) { money -= taxAccumulated; taxAccumulated = 0; addLog("Налоги уплачены."); updateUI(); saveGame(); alert("Налоги уплачены!"); } 
                 else alert("Недостаточно денег!");
             } else alert("Нет накопленных налогов.");
         }
@@ -447,8 +526,9 @@
         function buyPoint() {
             if (money >= pointCost) {
                 money -= pointCost;
-                pointsList.push({ id: Date.now(), price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0 });
+                pointsList.push({ id: Date.now(), price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0, wins: 0 });
                 pointCost = Math.floor(pointCost * 2.5);
+                addLog("Открыта новая точка!");
                 updateUI(); saveGame();
             } else alert("Недостаточно денег!");
         }
@@ -468,7 +548,7 @@
         }
 
         function saveGame() {
-            const gameData = { money, day, fullDays, dayTimerSeconds, pointsList, pointCost, machineLevel, machineCost, baristaCost, baristasList, hasManager, managerCost, taxAccumulated, depositBalance, debt, hasActiveEvent, currentEventData, eventCooldown };
+            const gameData = { money, day, fullDays, dayTimerSeconds, pointsList, pointCost, machineLevel, machineCost, baristaCost, baristasList, hasManager, managerCost, taxAccumulated, depositBalance, debt, hasActiveEvent, currentEventData, eventCooldown, bots, notificationLogs };
             const dataString = JSON.stringify(gameData);
             localStorage.setItem(SAVE_KEY, dataString);
             if (tg.CloudStorage) tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {});
@@ -494,6 +574,7 @@
             hasManager = data.hasManager ?? false; managerCost = data.managerCost ?? 5000;
             taxAccumulated = data.taxAccumulated ?? 0; depositBalance = data.depositBalance ?? 0; debt = data.debt ?? 0;
             hasActiveEvent = data.hasActiveEvent ?? false; currentEventData = data.currentEventData ?? null; eventCooldown = data.eventCooldown ?? 0;
+            bots = data.bots ?? bots; notificationLogs = data.notificationLogs ?? notificationLogs;
             updateUI();
         }
 
