@@ -1,10 +1,12 @@
 import asyncio
 import logging
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-BOT_TOKEN = '9038251037:AAECAF4p_C11eA57UwXPAa4qrknbBWM6M08'
+# Токен берется из настроек Render
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 GAME_URL = 'https://mak1925.github.io/coffee-game/index.html'
 
 logging.basicConfig(level=logging.INFO)
