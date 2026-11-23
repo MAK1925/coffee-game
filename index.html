@@ -22,11 +22,12 @@
         .loading-text { font-size: 18px; font-weight: bold; color: var(--accent); animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
-        .top-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 13px; z-index: 10; }
+        /* Исправленная шапка */
+        .top-bar { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--panel-bg); border-bottom: 2px solid #222; font-size: 12px; z-index: 10; }
         .stat { font-weight: bold; } .stat span { color: var(--accent); }
-        .days-badge { display: flex; align-items: center; background: #222; padding: 5px 10px; border-radius: 20px; font-weight: bold; border: 1px solid #555; }
-        .days-badge span { color: #4CAF50; margin-left: 5px; }
-        .days-timer { font-size: 10px; color: #888; display: block; text-align: right; margin-top: 2px; }
+        .days-badge { display: flex; align-items: center; background: #222; padding: 5px 8px; border-radius: 15px; font-weight: bold; border: 1px solid #555; font-size: 11px; }
+        .days-badge span { color: #4CAF50; margin-left: 3px; }
+        .days-timer { font-size: 9px; color: #888; display: block; text-align: right; margin-top: 1px; }
 
         .content { flex: 1; padding: 15px; overflow-y: auto; padding-bottom: 90px; }
         .tab-pane { display: none; text-align: left; } .tab-pane.active { display: block; }
@@ -47,13 +48,19 @@
         
         .city-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 15px; }
         .point-card { background: #444; padding: 15px; border-radius: 10px; border-left: 5px solid var(--accent); position: relative; }
-        .point-card.empty { border-left: 5px solid var(--gray-bldg); background: #333; opacity: 0.8; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100px; }
-        .neighbor-card { border-left: 5px solid var(--neighbor); background: #333; margin-top: 10px; }
+        .point-card.empty { border-left: 5px solid var(--gray-bldg); background: #333; opacity: 0.8; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100px; padding: 10px;}
         .point-icon { font-size: 24px; margin-right: 10px; }
         .point-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        /* Улучшения */
         .upgrades-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-        .upgrade-btn { width: auto; padding: 5px 10px; font-size: 11px; background: #555; border-radius: 5px; }
-        .upgrade-btn.active { background: var(--btn-bg); }
+        .upgrade-btn { width: auto; padding: 5px 10px; font-size: 11px; background: #555; border-radius: 5px; border: 1px solid #666; color: #fff;}
+        .upgrade-btn.active { background: var(--btn-bg); border-color: #2e7d32; }
+
+        /* Блок соседа */
+        .neighbor-block { margin-top: 15px; padding: 10px; background: #222; border-radius: 8px; border-left: 3px solid var(--neighbor); }
+        .neighbor-title { color: var(--neighbor); font-weight: bold; font-size: 12px; margin-bottom: 5px; }
+        .neighbor-power { font-size: 11px; color: #aaa; margin-bottom: 10px; }
 
         .event-btn { position: fixed; bottom: 80px; right: 20px; width: 60px; height: 60px; border-radius: 50%; background-color: var(--danger); color: white; font-size: 30px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 200; animation: pulse-event 2s infinite; display: none; }
         @keyframes pulse-event { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
@@ -188,8 +195,8 @@
             <button class="btn-secondary modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button>
         </div>
     </div>
+
     <script>
-        // Базовые данные
         let money = 500, day = 1, pointCost = 1000, machineLevel = 1, machineCost = 500, baristaCost = 2000;
         let fullDays = 15; const MAX_FULL_DAYS = 100; let dayTimerSeconds = 300;
         let pointsList = [{ id: 1, price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0, wins: 0 }];
@@ -197,7 +204,6 @@
         let taxAccumulated = 0, depositBalance = 0, debt = 0;
         let hasActiveEvent = false, currentEventData = null, eventCooldown = 0;
         
-        // НОВОЕ: Боты-соседи и Таблица лидеров
         let bots = [
             { name: "Болат-ага", money: 1500, points: 1, cups: 120 },
             { name: "Сауле", money: 3000, points: 2, cups: 250 },
@@ -206,7 +212,7 @@
         let notificationLogs = ["Добро пожаловать в игру!"];
 
         const tg = window.Telegram.WebApp;
-        const SAVE_KEY = 'coffeeEmpireSave_v10'; // Обновил версию
+        const SAVE_KEY = 'coffeeEmpireSave_v11';
 
         const NAMES = ["Асхат", "Ерлан", "Айгерим", "Бауыржан", "Ника", "Сауле", "Болат", "Дана"];
         const TRAITS = ["Трудяга", "Веселый", "Ворчун", "Соня", "Профи"];
@@ -298,15 +304,14 @@
             let container = document.getElementById('city-grid');
             container.innerHTML = '';
 
-            // Твои точки
             pointsList.forEach((point, index) => {
                 let type = "🏪";
                 if (point.upgrades && point.upgrades.board) type = "🏬";
                 if (point.upgrades && point.upgrades.sign && point.upgrades.umbrella) type = "🏢";
 
-                // Генерируем случайного соседа для этой точки (для визуала и боя)
                 let neighborPower = 50 + (index * 30) + (machineLevel * 10); 
 
+                // Вот здесь мы аккуратно собираем карточку точки вместе с блоком соседа
                 let card = document.createElement('div');
                 card.className = 'point-card';
                 card.innerHTML = `
@@ -323,9 +328,10 @@
                     </div>
                     ${!point.secondCounter ? `<button class="btn-secondary" style="margin-top:10px;" onclick="buySecondCounter(${index}, 5000)">Поставить 2-ю стойку (5000 ₸)</button>` : '<p style="color:#4CAF50; margin-top:10px; font-size:12px;">✅ Вторая стойка установлена</p>'}
                     
-                    <div class="neighbor-card point-card" style="margin-top:15px; padding:10px;">
-                        <p style="color:var(--neighbor); font-weight:bold; font-size:12px;">🔴 Сосед: Кофейня "У Болата"</p>
-                        <p style="font-size:11px;">Сила района: ${neighborPower}</p>
+                    <!-- БЛОК СОСЕДА -->
+                    <div class="neighbor-block">
+                        <div class="neighbor-title">🔴 Сосед: Кофейня "У Болата"</div>
+                        <div class="neighbor-power">Сила района: ${neighborPower}</div>
                         <button class="btn-danger" onclick="fightDistrict(${index}, ${neighborPower})">⚔️ Бой за район</button>
                     </div>
                 `;
@@ -343,16 +349,11 @@
             container.appendChild(emptyCard);
         }
 
-        // НОВОЕ: Таблица лидеров (Боты + Игрок)
         function renderLeaderboard() {
             let container = document.getElementById('leaderboard-list');
             container.innerHTML = '';
-            
-            // Собираем всех в один список
             let allPlayers = [...bots];
             allPlayers.push({ name: "Ты", money: money, points: pointsList.length, isPlayer: true });
-            
-            // Сортируем по деньгам
             allPlayers.sort((a, b) => b.money - a.money);
 
             allPlayers.forEach((p, i) => {
@@ -364,23 +365,20 @@
             });
         }
 
-        // НОВОЕ: Бой за район
         function fightDistrict(pointIndex, neighborPower) {
-            // Сила игрока зависит от цены точки, кофемашины и бариста
             let playerPower = pointsList[pointIndex].price + (machineLevel * 20) + (baristasList.length * 15);
             
             if (playerPower > neighborPower) {
                 let cupsWon = Math.floor(neighborPower / 10) + 1;
                 pointsList[pointIndex].wins = (pointsList[pointIndex].wins || 0) + cupsWon;
-                pointsList[pointIndex].price += 30; // Бонус к цене за победу
-                addLog(`🏆 Победа! Ты забрал район. Получено ${cupsWon} кубков и +30₸ к цене точки.`);
-                alert(`Победа! Твоя сила ${playerPower} против ${neighborPower}. Получено ${cupsWon} кубков!`);
+                pointsList[pointIndex].price += 30;
+                addLog(`🏆 Победа! Получено ${cupsWon} кубков.`);
+                alert(`Победа! Сила: ${playerPower} vs ${neighborPower}. Получено ${cupsWon} кубков!`);
             } else {
-                addLog(`💀 Поражение в бою за район. Твоя сила ${playerPower} была меньше ${neighborPower}.`);
-                alert(`Поражение! Твоя сила ${playerPower}, а соседа ${neighborPower}. Прокачай точку!`);
+                addLog(`💀 Поражение в бою.`);
+                alert(`Поражение! Сила: ${playerPower} vs ${neighborPower}. Прокачай точку!`);
             }
-            updateUI();
-            saveGame();
+            updateUI(); saveGame();
         }
 
         function addLog(text) {
@@ -435,7 +433,6 @@
             if (!hasActiveEvent && eventCooldown <= 0) { if (Math.random() < 0.3) spawnRandomEvent(); } 
             else if (eventCooldown > 0) eventCooldown--;
 
-            // Симуляция активности ботов (они тоже зарабатывают)
             bots.forEach(b => b.money += Math.floor(Math.random() * 200) + 50);
 
             updateUI(); saveGame();
@@ -446,9 +443,9 @@
             if (!hasManager && money >= managerCost) {
                 money -= managerCost; hasManager = true;
                 pointsList.forEach(p => p.price = Math.floor(p.price * 1.2));
-                addLog("Нанят управляющий. Цены подняты на 20%.");
+                addLog("Нанят управляющий. Цены +20%.");
                 updateUI(); saveGame(); alert("Управляющий нанят!");
-            } else alert(hasManager ? "Уже есть управляющий." : "Недостаточно денег!");
+            } else alert(hasManager ? "Уже есть." : "Недостаточно денег!");
         }
 
         function hireBarista() {
@@ -462,7 +459,7 @@
                 let randomTrait = TRAITS[Math.floor(Math.random() * TRAITS.length)];
                 baristasList.push({ id: Date.now(), name: randomName, trait: randomTrait, mood: 100 });
                 baristaCost = Math.floor(baristaCost * 1.5);
-                addLog(`Нанят новый бариста: ${randomName}`);
+                addLog(`Нанят бариста: ${randomName}`);
                 updateUI(); saveGame();
             } else alert("Недостаточно денег!");
         }
@@ -486,101 +483,4 @@
         }
 
         function withdrawDeposit() {
-            if (depositBalance > 0) { money += depositBalance; depositBalance = 0; updateUI(); saveGame(); }
-        }
-
-        function takeLoan(amount) {
-            money += amount; debt += amount * 1.2; updateUI(); saveGame();
-        }
-
-        function repayLoan() {
-            if (debt > 0) {
-                if (money >= debt) { money -= debt; debt = 0; updateUI(); saveGame(); alert("Кредит погашен!"); } 
-                else alert("Недостаточно денег!");
-            } else alert("У вас нет долгов.");
-        }
-
-        const EVENTS = [
-            { title: "Бариста просит прибавку", desc: "Твой бариста просит больше денег.", opt1: "Дать прибавку (-1000 ₸)", opt2: "Отказать", action1: () => { if(money >= 1000) { money -= 1000; return "Бариста доволен!"; } else return "Не хватило денег!"; }, action2: () => { if (Math.random() < 0.5 && baristasList.length > 0) { baristasList.pop(); return "Бариста уволился!"; } return "Бариста остался."; } },
-            { title: "Блогер хочет обзор", desc: "Блогер Ника хочет обзор.", opt1: "Заплатить (-2000 ₸)", opt2: "Отказаться", action1: () => { if(money >= 2000) { money -= 2000; pointsList[0].price += 20; return "Приток гостей!"; } else return "Не хватило денег!"; }, action2: () => "Вы отказались." }
-        ];
-
-        function spawnRandomEvent() {
-            hasActiveEvent = true;
-            currentEventData = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-            document.getElementById('event-title').innerText = currentEventData.title;
-            document.getElementById('event-desc').innerText = currentEventData.desc;
-            document.getElementById('event-opt1').innerText = currentEventData.opt1;
-            document.getElementById('event-opt2').innerText = currentEventData.opt2;
-            updateUI();
-        }
-
-        function triggerEvent() { if (hasActiveEvent) document.getElementById('event-modal').style.display = 'flex'; }
-        function resolveEvent(choice) {
-            let msg = (choice === 1) ? currentEventData.action1() : currentEventData.action2();
-            hasActiveEvent = false; eventCooldown = 3;
-            document.getElementById('event-modal').style.display = 'none';
-            updateUI(); saveGame(); alert(msg);
-        }
-
-        function buyPoint() {
-            if (money >= pointCost) {
-                money -= pointCost;
-                pointsList.push({ id: Date.now(), price: 100, upgrades: { umbrella: false, sign: false, board: false, music: false }, secondCounter: false, baristasAssigned: 0, wins: 0 });
-                pointCost = Math.floor(pointCost * 2.5);
-                addLog("Открыта новая точка!");
-                updateUI(); saveGame();
-            } else alert("Недостаточно денег!");
-        }
-
-        function changeAllPrices() { pointsList.forEach(point => { point.price += 50; }); updateUI(); saveGame(); }
-
-        function upgradeMachine() {
-            if (money >= machineCost) { money -= machineCost; machineLevel += 1; machineCost = Math.floor(machineCost * 1.8); updateUI(); saveGame(); } 
-            else alert("Недостаточно денег!");
-        }
-
-        function switchTab(tabName, element) {
-            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function saveGame() {
-            const gameData = { money, day, fullDays, dayTimerSeconds, pointsList, pointCost, machineLevel, machineCost, baristaCost, baristasList, hasManager, managerCost, taxAccumulated, depositBalance, debt, hasActiveEvent, currentEventData, eventCooldown, bots, notificationLogs };
-            const dataString = JSON.stringify(gameData);
-            localStorage.setItem(SAVE_KEY, dataString);
-            if (tg.CloudStorage) tg.CloudStorage.setItem(SAVE_KEY, dataString, (err) => {});
-        }
-
-        function loadGame() {
-            let localData = localStorage.getItem(SAVE_KEY);
-            if (localData) { try { applyData(JSON.parse(localData)); } catch(e) {} }
-            if (tg.CloudStorage) {
-                tg.CloudStorage.getItem(SAVE_KEY, (err, cloudData) => {
-                    if (!err && cloudData) { try { applyData(JSON.parse(cloudData)); } catch(e) {} }
-                    finishLoading();
-                });
-            } else finishLoading();
-        }
-
-        function applyData(data) {
-            money = data.money ?? money; day = data.day ?? day;
-            fullDays = data.fullDays ?? fullDays; dayTimerSeconds = data.dayTimerSeconds ?? 300;
-            pointsList = data.pointsList ?? pointsList; pointCost = data.pointCost ?? pointCost;
-            machineLevel = data.machineLevel ?? machineLevel; machineCost = data.machineCost ?? machineCost;
-            baristaCost = data.baristaCost ?? baristaCost; baristasList = data.baristasList ?? [];
-            hasManager = data.hasManager ?? false; managerCost = data.managerCost ?? 5000;
-            taxAccumulated = data.taxAccumulated ?? 0; depositBalance = data.depositBalance ?? 0; debt = data.debt ?? 0;
-            hasActiveEvent = data.hasActiveEvent ?? false; currentEventData = data.currentEventData ?? null; eventCooldown = data.eventCooldown ?? 0;
-            bots = data.bots ?? bots; notificationLogs = data.notificationLogs ?? notificationLogs;
-            updateUI();
-        }
-
-        function finishLoading() { document.getElementById('loading-screen').style.display = 'none'; }
-
-        tg.ready(); tg.expand(); updateUI(); loadGame();
-    </script>
-</body>
-</html>
+            if
