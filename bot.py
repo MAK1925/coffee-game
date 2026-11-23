@@ -7,11 +7,11 @@ from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 # Токен вписан прямо сюда
-BOT_TOKEN = '9038251037:AAG26-UiZy7mQThK2E0Zc_CfkGAobsQnbNE'
+TOKEN = '9038251037:AAG26-UiZy7mQThK2E0Zc_CfkGAobsQnbNE'
 GAME_URL = 'https://mak1925.github.io/coffee-game/index.html'
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 @dp.message(CommandStart())
