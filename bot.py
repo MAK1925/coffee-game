@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
-# Токен вписан прямо сюда
+# Имя переменной изменено на TOKEN
 TOKEN = '9038251037:AAG26-UiZy7mQThK2E0Zc_CfkGAobsQnbNE'
 GAME_URL = 'https://mak1925.github.io/coffee-game/index.html'
 
