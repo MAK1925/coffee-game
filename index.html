@@ -2,151 +2,251 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кофейня: Империя</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кофейня: Империя с нуля</title>
+    <style>
+        /* Стили встроены прямо сюда, чтобы не было проблем с подключением файлов */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #2c2c2c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Сцена */
+        #game-scene {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background-color: #e0e0e0;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 3px solid #555;
+        }
+
+        /* Прилавок */
+        #counter {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: #8B4513;
+            z-index: 10;
+            border-top: 3px solid #5c2e0b;
+        }
+
+        /* Слой для динамических элементов */
+        #entities-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Покупатель */
+        .customer {
+            position: absolute;
+            bottom: 80px;
+            width: 40px;
+            height: 80px;
+            background-color: #3498db;
+            border-radius: 10px 10px 0 0;
+            transition: left 2s linear;
+            z-index: 5;
+        }
+
+        /* Стакан с кофе */
+        .cup {
+            position: absolute;
+            bottom: 80px;
+            width: 20px;
+            height: 30px;
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 0 0 5px 5px;
+            z-index: 15;
+        }
+
+        /* Всплывающий текст цены */
+        .floating-text {
+            position: absolute;
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
+            animation: floatUp 1.5s ease-out forwards;
+            z-index: 20;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        /* Панель управления */
+        #ui-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background-color: #444;
+            padding: 15px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+
+        #balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        #start-day-btn {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        #start-day-btn:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        #start-day-btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+    </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="coffee-cup">
-            <div class="steam"></div>
-            <div class="steam"></div>
-            <div class="steam"></div>
-            <div class="cup"></div>
+    <div id="game-container">
+        <!-- Сцена -->
+        <div id="game-scene">
+            <div id="counter"></div>
+            <div id="entities-layer"></div>
         </div>
-        <div class="loading-text">Готовим кофе...</div>
-    </div>
 
-    <div class="top-bar">
-        <div class="stat">День: <span id="day-val">1</span></div>
-        <div class="stat">Баланс: <span id="money-val">500</span> ₸</div>
-        <div style="text-align: right;">
-            <div class="days-badge">📅 Полные дни: <span id="full-days-val">15</span></div>
-            <div class="days-timer" id="full-days-timer">+1 через: 5:00</div>
+        <!-- Панель управления -->
+        <div id="ui-panel">
+            <div>💰 Баланс: <span id="balance">0</span></div>
+            <button id="start-day-btn">Начать день</button>
         </div>
     </div>
 
-    <div class="content">
-        <div id="tab-coffee" class="tab-pane active">
-            <h1>Твоя Кофейня</h1>
+    <script>
+        // --- Логика игры ---
+        let balance = 0;
+        let isDayRunning = false;
+        let customerInterval;
+
+        const balanceEl = document.getElementById('balance');
+        const startBtn = document.getElementById('start-day-btn');
+        const entitiesLayer = document.getElementById('entities-layer');
+
+        // Старт дня
+        startBtn.addEventListener('click', () => {
+            if (isDayRunning) return;
+            isDayRunning = true;
+            startBtn.disabled = true;
+            startBtn.innerText = "День идет...";
             
-            <div class="card" style="border-left: 5px solid var(--btn-bg);">
-                <h2>🏁 Путь новичка</h2>
-                <p id="task-text" style="color: var(--text-main); font-weight: bold;">Задача: Открыть 1-й день</p>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="flex: 1; background: #222; height: 10px; border-radius: 5px; margin-right: 10px; overflow: hidden;">
-                        <div id="task-progress-bar" style="background: var(--btn-bg); height: 100%; width: 0%;"></div>
-                    </div>
-                    <span id="task-progress-text" style="font-size: 12px; font-weight: bold;">0/1</span>
-                </div>
-                <button id="btn-claim-task" class="btn-buy" style="margin-top: 10px; display: none;" onclick="claimTask()">Забрать награду 🎁</button>
-            </div>
+            // Спавним покупателя каждые 3 секунды
+            customerInterval = setInterval(spawnCustomer, 3000);
+            
+            // (Опционально) Можно добавить остановку дня через 30 секунд
+            setTimeout(() => {
+                clearInterval(customerInterval);
+                isDayRunning = false;
+                startBtn.disabled = false;
+                startBtn.innerText = "Начать день";
+            }, 30000);
+        });
 
-            <div class="card">
-                <h2>Главный экран</h2>
-                <p>Точек в сети: <strong id="points-val">1</strong></p>
-                <p>Прибыль за день: <strong id="income-val">100</strong> ₸</p>
-                <button id="btn-open-day" class="btn-main" onclick="openDay()">Открыть день <span id="next-day">2</span></button>
-                <p id="status-msg" style="text-align: center; margin-top: 10px; color: #ffcc00;"></p>
-            </div>
-        </div>
+        function spawnCustomer() {
+            const customer = document.createElement('div');
+            customer.classList.add('customer');
+            
+            // Появляемся справа за экраном
+            customer.style.left = '100%'; 
+            entitiesLayer.appendChild(customer);
 
-        <div id="tab-city" class="tab-pane">
-            <h1>Карта Города</h1>
-            <div class="city-grid" id="city-grid"></div>
-        </div>
+            // Начинаем движение влево к прилавку
+            // Используем requestAnimationFrame для плавного старта транзишена
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    customer.style.left = '50%'; 
+                });
+            });
 
-        <div id="tab-net" class="tab-pane">
-            <h1>Твоя Сеть</h1>
-            <div class="card">
-                <h2>Управление всей сетью</h2>
-                <button class="btn-secondary" onclick="changeAllPrices()">Поднять цену везде (+50)</button>
-            </div>
-            <div class="card">
-                <h2>Управляющие</h2>
-                <p>Статус: <strong id="manager-status">Нет управляющего</strong></p>
-                <button class="btn-buy" id="btn-hire-manager" onclick="hireManager()">Нанять управляющего (5000 ₸)</button>
-            </div>
-        </div>
+            // Ждем 2 секунды (время анимации), затем обслуживаем
+            setTimeout(() => {
+                serveCustomer(customer);
+            }, 2050);
+        }
 
-        <div id="tab-people" class="tab-pane">
-            <h1>Люди</h1>
-            <div class="card">
-                <h2>Найм персонала</h2>
-                <p>Нанято: <strong id="barista-val">0</strong></p>
-                <p>Стоимость найма: <strong id="barista-cost">2000</strong> ₸</p>
-                <button class="btn-buy" onclick="hireBarista()">Нанять бариста</button>
-            </div>
-            <div class="card">
-                <h2>Твоя команда</h2>
-                <div id="baristas-list"><p>Пока никого нет.</p></div>
-            </div>
-        </div>
+        function serveCustomer(customer) {
+            // 1. Ставим стакан на прилавок
+            const cup = document.createElement('div');
+            cup.classList.add('cup');
+            cup.style.left = 'calc(50% + 10px)'; // Рядом с покупателем
+            entitiesLayer.appendChild(cup);
 
-        <div id="tab-money" class="tab-pane">
-            <h1>Деньги</h1>
-            <div class="card">
-                <h2>Налоги</h2>
-                <p>Накоплено к уплате: <strong id="tax-val">0</strong> ₸</p>
-                <button class="btn-danger" onclick="payTaxes()">Оплатить налоги</button>
-            </div>
-            <div class="card">
-                <h2>Депозит (14% годовых)</h2>
-                <p>На депозите: <strong id="deposit-val">0</strong> ₸</p>
-                <button class="btn-secondary" onclick="depositMoney(1000)">Вложить 1000</button>
-                <button class="btn-secondary" onclick="withdrawDeposit()" style="margin-top:5px;">Снять всё</button>
-            </div>
-            <div class="card">
-                <h2>Кредит (до 30 млн)</h2>
-                <p>Текущий долг: <strong id="debt-val">0</strong> ₸</p>
-                <button class="btn-secondary" onclick="takeLoan(5000)">Взять кредит 5000 ₸</button>
-                <button class="btn-secondary" onclick="repayLoan()" style="margin-top:5px;">Погасить долг</button>
-            </div>
-        </div>
+            // 2. Через секунду покупатель забирает стакан
+            setTimeout(() => {
+                cup.remove(); 
+                
+                // 3. Начисляем деньги
+                const price = 15;
+                balance += price;
+                balanceEl.innerText = balance;
+                showFloatingText(price);
 
-        <div id="tab-more" class="tab-pane">
-            <h1>Ещё</h1>
-            <div class="card">
-                <h2>Таблица лидеров</h2>
-                <div id="leaderboard-list"></div>
-            </div>
-            <div class="card">
-                <h2>Журнал уведомлений</h2>
-                <div id="notification-log" style="font-size:12px; color:#aaa; max-height:200px; overflow-y:auto;">
-                    <p>Пока тихо...</p>
-                </div>
-            </div>
-            <div class="card">
-                <h2>Кофемашина (Улучшение)</h2>
-                <p>Текущий уровень: <strong id="machine-lvl">1</strong></p>
-                <p>Стоимость: <strong id="machine-cost">500</strong> ₸</p>
-                <button class="btn-buy" onclick="upgradeMachine()">Купить улучшение</button>
-            </div>
-        </div>
-    </div>
+                // 4. Покупатель уходит
+                customer.style.left = '-20%'; 
 
-    <div class="event-btn" id="event-btn" onclick="triggerEvent()">❗</div>
+                // Удаляем элемент из DOM после ухода
+                setTimeout(() => {
+                    customer.remove();
+                }, 2100);
 
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="switchTab('city', this)"><div class="nav-icon">🏙️</div><div>Город</div></div>
-        <div class="nav-item" onclick="switchTab('net', this)"><div class="nav-icon">🏪</div><div>Сеть</div></div>
-        <div class="nav-item active" onclick="switchTab('coffee', this)"><div class="nav-icon">☕</div><div>Кофейня</div></div>
-        <div class="nav-item" onclick="switchTab('people', this)"><div class="nav-icon">👥</div><div>Люди</div></div>
-        <div class="nav-item" onclick="switchTab('money', this)"><div class="nav-icon">💰</div><div>Деньги</div></div>
-        <div class="nav-item" onclick="switchTab('more', this)"><div class="nav-icon">⚙️</div><div>Ещё</div></div>
-    </div>
+            }, 1000);
+        }
 
-    <div class="modal" id="event-modal">
-        <div class="modal-content">
-            <h2 id="event-title">Событие!</h2>
-            <p id="event-desc"></p>
-            <button class="btn-main modal-btn" id="event-opt1" onclick="resolveEvent(1)">Вариант 1</button>
-            <button class="btn-secondary modal-btn" id="event-opt2" onclick="resolveEvent(2)">Вариант 2</button>
-        </div>
-    </div>
+        function showFloatingText(amount) {
+            const text = document.createElement('div');
+            text.classList.add('floating-text');
+            text.innerText = '+' + amount + '$';
+            text.style.left = 'calc(50% + 5px)';
+            text.style.bottom = '120px'; // Над прилавком
+            entitiesLayer.appendChild(text);
 
-    <script src="app.js"></script>
+            setTimeout(() => {
+                text.remove();
+            }, 1500);
+        }
+    </script>
 </body>
 </html>
